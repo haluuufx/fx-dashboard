@@ -1,0 +1,1898 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FX Fundamental Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #080c14;
+    --bg2: #0d1421;
+    --bg3: #111827;
+    --surface: #141e2e;
+    --surface2: #1a2640;
+    --border: #1f3050;
+    --border2: #2a3f60;
+    --accent: #00d4ff;
+    --accent2: #0099bb;
+    --green: #00e676;
+    --red: #ff4444;
+    --yellow: #ffd600;
+    --orange: #ff9800;
+    --text: #e8f0fe;
+    --text2: #8fa8c8;
+    --text3: #4a6080;
+    --usd: #4fc3f7;
+    --eur: #81c784;
+    --gbp: #ce93d8;
+    --jpy: #ffb74d;
+    --comm: #a5d6a7;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Noto Sans JP', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── GRID BACKGROUND ── */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0,212,255,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,212,255,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* ── HEADER ── */
+  header {
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(8,12,20,0.92);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border);
+    padding: 0 24px;
+    display: flex; align-items: center; gap: 20px;
+    height: 56px;
+  }
+  .logo {
+    font-family: 'Space Mono', monospace;
+    font-size: 16px; font-weight: 700;
+    color: var(--accent);
+    letter-spacing: 2px;
+    white-space: nowrap;
+  }
+  .logo span { color: var(--text3); font-weight: 400; }
+  .header-time {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px; color: var(--text3);
+    margin-left: auto;
+  }
+  .header-time b { color: var(--text2); }
+
+  nav {
+    display: flex; gap: 4px;
+  }
+  .nav-btn {
+    background: none; border: none;
+    padding: 6px 14px; border-radius: 6px;
+    font-family: 'Noto Sans JP', sans-serif;
+    font-size: 12px; color: var(--text3);
+    cursor: pointer; transition: all .2s;
+    white-space: nowrap;
+  }
+  .nav-btn:hover { color: var(--text2); background: var(--surface); }
+  .nav-btn.active { color: var(--accent); background: rgba(0,212,255,0.1); }
+
+  /* ── MAIN LAYOUT ── */
+  main {
+    position: relative; z-index: 1;
+    padding: 20px 24px;
+    max-width: 1600px;
+    margin: 0 auto;
+  }
+
+  /* ── SECTIONS ── */
+  .section { display: none; }
+  .section.active { display: block; }
+
+  /* ── CURRENCY TICKER ── */
+  .ticker-bar {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 20px;
+    display: flex; gap: 28px; flex-wrap: wrap;
+    margin-bottom: 20px;
+    align-items: center;
+  }
+  .ticker-item {
+    display: flex; align-items: center; gap: 8px;
+  }
+  .ticker-pair {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px; font-weight: 700;
+    color: var(--text2);
+  }
+  .ticker-val {
+    font-family: 'Space Mono', monospace;
+    font-size: 13px; font-weight: 700;
+    color: var(--text);
+  }
+  .ticker-chg {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+  }
+  .up { color: var(--green); }
+  .dn { color: var(--red); }
+
+  /* ── GRID ── */
+  .grid-4 {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+  .grid-3 {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+  .grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+  .grid-65 {
+    display: grid;
+    grid-template-columns: 1.6fr 1fr;
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+
+  /* ── CARD ── */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 18px;
+    position: relative;
+    overflow: hidden;
+  }
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--accent), transparent);
+    opacity: 0.3;
+  }
+  .card-title {
+    font-size: 10px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 2px;
+    color: var(--text3); margin-bottom: 14px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .card-title .dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--accent);
+  }
+
+  /* ── CURRENCY CARD ── */
+  .currency-card {
+    border-top: 3px solid;
+  }
+  .currency-card.usd { border-top-color: var(--usd); }
+  .currency-card.eur { border-top-color: var(--eur); }
+  .currency-card.gbp { border-top-color: var(--gbp); }
+  .currency-card.jpy { border-top-color: var(--jpy); }
+  .currency-card.comm { border-top-color: var(--comm); }
+
+  .currency-header {
+    display: flex; align-items: center; gap: 10px;
+    margin-bottom: 14px;
+  }
+  .currency-flag {
+    width: 32px; height: 22px;
+    border-radius: 4px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+  }
+  .currency-name {
+    font-family: 'Space Mono', monospace;
+    font-size: 18px; font-weight: 700;
+  }
+  .currency-name.usd { color: var(--usd); }
+  .currency-name.eur { color: var(--eur); }
+  .currency-name.gbp { color: var(--gbp); }
+  .currency-name.jpy { color: var(--jpy); }
+  .currency-name.comm { color: var(--comm); }
+  .currency-fullname {
+    font-size: 10px; color: var(--text3); margin-top: 2px;
+  }
+  .bias-badge {
+    margin-left: auto;
+    padding: 4px 10px; border-radius: 20px;
+    font-size: 10px; font-weight: 700;
+    letter-spacing: 1px;
+  }
+  .bias-bull { background: rgba(0,230,118,0.15); color: var(--green); border: 1px solid rgba(0,230,118,0.3); }
+  .bias-bear { background: rgba(255,68,68,0.15); color: var(--red); border: 1px solid rgba(255,68,68,0.3); }
+  .bias-neut { background: rgba(255,214,0,0.1); color: var(--yellow); border: 1px solid rgba(255,214,0,0.3); }
+
+  /* ── METER ── */
+  .meter-row {
+    display: flex; align-items: center; gap: 10px;
+    margin-bottom: 8px;
+  }
+  .meter-label {
+    font-size: 10px; color: var(--text3);
+    width: 80px; flex-shrink: 0;
+  }
+  .meter-bar {
+    flex: 1; height: 4px;
+    background: var(--bg2);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .meter-fill {
+    height: 100%; border-radius: 2px;
+    transition: width .8s ease;
+  }
+  .meter-val {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px; color: var(--text2);
+    width: 50px; text-align: right; flex-shrink: 0;
+  }
+
+  /* ── KEY LEVEL ── */
+  .key-levels {
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid var(--border);
+  }
+  .key-level-row {
+    display: flex; justify-content: space-between;
+    font-size: 11px;
+    padding: 3px 0;
+  }
+  .key-level-label { color: var(--text3); }
+  .key-level-val {
+    font-family: 'Space Mono', monospace;
+    color: var(--text2);
+  }
+
+  /* ── NEWS FEED ── */
+  .news-feed { display: flex; flex-direction: column; gap: 0; }
+  .news-item {
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border);
+    cursor: pointer;
+    transition: all .2s;
+  }
+  .news-item:last-child { border-bottom: none; }
+  .news-item:hover { background: rgba(255,255,255,0.02); margin: 0 -18px; padding-left: 18px; padding-right: 18px; border-radius: 8px; }
+  .news-item-header {
+    display: flex; align-items: center; gap: 8px;
+    margin-bottom: 4px;
+  }
+  .news-tag {
+    font-size: 9px; font-weight: 700; letter-spacing: 1px;
+    padding: 2px 6px; border-radius: 3px;
+    text-transform: uppercase;
+  }
+  .tag-usd { background: rgba(79,195,247,0.2); color: var(--usd); }
+  .tag-eur { background: rgba(129,199,132,0.2); color: var(--eur); }
+  .tag-gbp { background: rgba(206,147,216,0.2); color: var(--gbp); }
+  .tag-jpy { background: rgba(255,183,77,0.2); color: var(--jpy); }
+  .tag-comm { background: rgba(165,214,167,0.2); color: var(--comm); }
+  .tag-global { background: rgba(255,255,255,0.1); color: var(--text2); }
+  .news-time {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px; color: var(--text3);
+    margin-left: auto;
+  }
+  .news-title {
+    font-size: 12px; font-weight: 500;
+    color: var(--text); line-height: 1.5;
+    margin-bottom: 4px;
+  }
+  .news-impact {
+    display: flex; align-items: center; gap: 4px;
+    font-size: 10px; color: var(--text3);
+  }
+  .impact-dot {
+    width: 5px; height: 5px; border-radius: 50%;
+  }
+  .impact-high { background: var(--red); }
+  .impact-med { background: var(--yellow); }
+  .impact-low { background: var(--green); }
+
+  /* ── AI ANALYSIS ── */
+  .ai-box {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px;
+    margin-top: 12px;
+  }
+  .ai-box-title {
+    font-size: 9px; font-weight: 700; letter-spacing: 2px;
+    color: var(--accent); text-transform: uppercase;
+    margin-bottom: 8px;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .ai-pulse {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--accent);
+    animation: pulse 2s infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.4; transform: scale(0.8); }
+  }
+  .ai-text {
+    font-size: 12px; color: var(--text2);
+    line-height: 1.7;
+  }
+  .ai-loading {
+    display: flex; gap: 4px; align-items: center;
+    font-size: 11px; color: var(--text3);
+  }
+  .ai-loading span {
+    display: inline-block;
+    width: 4px; height: 4px; border-radius: 50%;
+    background: var(--accent);
+    animation: blink 1.4s infinite;
+  }
+  .ai-loading span:nth-child(2) { animation-delay: .2s; }
+  .ai-loading span:nth-child(3) { animation-delay: .4s; }
+  @keyframes blink {
+    0%, 80%, 100% { opacity: 0.2; }
+    40% { opacity: 1; }
+  }
+
+  /* ── ECONOMIC CALENDAR ── */
+  .cal-filter {
+    display: flex; gap: 8px; flex-wrap: wrap;
+    margin-bottom: 14px;
+  }
+  .cal-filter-btn {
+    padding: 4px 12px; border-radius: 20px;
+    font-size: 10px; font-weight: 700; letter-spacing: 1px;
+    border: 1px solid var(--border2);
+    background: none; color: var(--text3); cursor: pointer;
+    transition: all .2s;
+    text-transform: uppercase;
+  }
+  .cal-filter-btn:hover { color: var(--text2); border-color: var(--text3); }
+  .cal-filter-btn.active {
+    background: rgba(0,212,255,0.1);
+    color: var(--accent); border-color: var(--accent);
+  }
+  .cal-table { width: 100%; border-collapse: collapse; }
+  .cal-table th {
+    font-size: 9px; font-weight: 700; letter-spacing: 2px;
+    text-transform: uppercase; color: var(--text3);
+    text-align: left; padding: 6px 8px;
+    border-bottom: 1px solid var(--border);
+  }
+  .cal-table td {
+    font-size: 11px; padding: 10px 8px;
+    border-bottom: 1px solid rgba(31,48,80,0.5);
+    vertical-align: middle;
+    color: var(--text2);
+  }
+  .cal-table tr:hover td { background: rgba(255,255,255,0.02); }
+  .cal-time {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px; color: var(--text3);
+    white-space: nowrap;
+  }
+  .cal-event { color: var(--text); font-weight: 500; }
+  .cal-prev, .cal-fore, .cal-actual {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px; text-align: right;
+  }
+  .cal-actual.beat { color: var(--green); }
+  .cal-actual.miss { color: var(--red); }
+  .cal-actual.meet { color: var(--yellow); }
+  .imp-badge {
+    display: inline-block;
+    width: 8px; height: 8px; border-radius: 50%;
+  }
+  .imp-h { background: var(--red); }
+  .imp-m { background: var(--yellow); }
+  .imp-l { background: var(--green); }
+
+  /* ── FUNDAMENTAL PANEL ── */
+  .fund-currency-tabs {
+    display: flex; gap: 4px;
+    margin-bottom: 16px;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 0;
+  }
+  .fund-tab {
+    padding: 8px 16px; border: none; background: none;
+    font-family: 'Space Mono', monospace;
+    font-size: 12px; font-weight: 700;
+    color: var(--text3); cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: all .2s;
+    margin-bottom: -1px;
+  }
+  .fund-tab:hover { color: var(--text2); }
+  .fund-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+  .fund-content { display: none; }
+  .fund-content.active { display: block; }
+
+  .fund-section {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px;
+    margin-bottom: 12px;
+  }
+  .fund-section-title {
+    font-size: 10px; font-weight: 700; letter-spacing: 2px;
+    text-transform: uppercase; color: var(--accent);
+    margin-bottom: 10px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .fund-section-icon { font-size: 14px; }
+  .fund-item {
+    display: flex; gap: 8px;
+    margin-bottom: 8px;
+    padding: 8px 10px;
+    background: var(--surface);
+    border-radius: 6px;
+    border: 1px solid var(--border);
+  }
+  .fund-item-arrow { font-size: 16px; flex-shrink: 0; }
+  .fund-item-body {}
+  .fund-item-condition {
+    font-size: 11px; font-weight: 700; color: var(--text);
+    margin-bottom: 4px;
+  }
+  .fund-item-effect {
+    font-size: 11px; color: var(--text2); line-height: 1.5;
+  }
+  .fund-current {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 12px;
+    background: var(--surface2);
+    border: 1px solid var(--border2);
+    border-radius: 8px;
+    margin-bottom: 12px;
+  }
+  .fund-current-label { font-size: 11px; color: var(--text3); }
+  .fund-current-val {
+    font-family: 'Space Mono', monospace;
+    font-size: 16px; font-weight: 700;
+  }
+  .fund-current-trend {
+    font-size: 10px;
+    padding: 3px 8px; border-radius: 10px;
+  }
+
+  /* ── NEWS INPUT ── */
+  .news-input-area {
+    width: 100%; background: var(--bg2);
+    border: 1px solid var(--border2);
+    border-radius: 8px; padding: 12px;
+    color: var(--text); font-size: 12px;
+    font-family: 'Noto Sans JP', sans-serif;
+    resize: vertical; min-height: 80px;
+    transition: border-color .2s;
+  }
+  .news-input-area:focus {
+    outline: none; border-color: var(--accent);
+    box-shadow: 0 0 0 2px rgba(0,212,255,0.1);
+  }
+  .news-input-area::placeholder { color: var(--text3); }
+  .btn-primary {
+    background: var(--accent); color: var(--bg);
+    border: none; border-radius: 8px;
+    padding: 10px 20px;
+    font-size: 12px; font-weight: 700;
+    font-family: 'Noto Sans JP', sans-serif;
+    cursor: pointer; transition: all .2s;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .btn-primary:hover { background: #00b8d9; transform: translateY(-1px); }
+  .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+  .btn-secondary {
+    background: var(--surface2); color: var(--text2);
+    border: 1px solid var(--border2); border-radius: 8px;
+    padding: 10px 20px;
+    font-size: 12px; font-weight: 700;
+    font-family: 'Noto Sans JP', sans-serif;
+    cursor: pointer; transition: all .2s;
+  }
+  .btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* ── RSS STATUS ── */
+  .rss-source {
+    display: flex; align-items: center; gap: 10px;
+    padding: 8px 12px;
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 8px; margin-bottom: 8px;
+  }
+  .rss-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .rss-active { background: var(--green); box-shadow: 0 0 6px var(--green); }
+  .rss-pending { background: var(--yellow); animation: pulse 2s infinite; }
+  .rss-name { font-size: 12px; color: var(--text); flex: 1; }
+  .rss-count {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px; color: var(--text3);
+  }
+  .rss-time {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px; color: var(--text3);
+  }
+
+  /* ── SCROLLBAR ── */
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+
+  /* ── ANALYSIS RESULT ── */
+  .analysis-result {
+    background: var(--bg2);
+    border: 1px solid var(--border2);
+    border-radius: 10px;
+    padding: 16px;
+    margin-top: 12px;
+  }
+  .analysis-header {
+    display: flex; align-items: center; gap: 10px;
+    margin-bottom: 12px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border);
+  }
+  .analysis-title {
+    font-size: 11px; font-weight: 700; letter-spacing: 1px;
+    color: var(--accent);
+  }
+  .analysis-body {
+    font-size: 12px; color: var(--text2);
+    line-height: 1.8;
+    white-space: pre-wrap;
+  }
+  .analysis-currencies {
+    display: flex; gap: 6px; flex-wrap: wrap;
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid var(--border);
+  }
+  .cur-impact {
+    padding: 3px 8px; border-radius: 4px;
+    font-size: 10px; font-weight: 700;
+    font-family: 'Space Mono', monospace;
+  }
+
+  /* ── RATE COMPARISON ── */
+  .rate-compare {
+    display: flex; flex-direction: column; gap: 10px;
+  }
+  .rate-bar-item {
+    display: flex; align-items: center; gap: 10px;
+  }
+  .rate-country {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px; font-weight: 700;
+    width: 35px; flex-shrink: 0;
+  }
+  .rate-bar-outer {
+    flex: 1; background: var(--bg2);
+    border-radius: 4px; height: 20px;
+    overflow: hidden; position: relative;
+  }
+  .rate-bar-inner {
+    height: 100%; border-radius: 4px;
+    display: flex; align-items: center;
+    padding-right: 8px;
+    justify-content: flex-end;
+    transition: width 1s ease;
+  }
+  .rate-bar-val {
+    font-family: 'Space Mono', monospace;
+    font-size: 9px; font-weight: 700;
+    color: var(--bg);
+  }
+
+  /* ── SUMMARY BADGES ── */
+  .summary-grid {
+    display: grid; grid-template-columns: repeat(5, 1fr);
+    gap: 10px; margin-bottom: 16px;
+  }
+  .summary-badge {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px;
+    text-align: center;
+    cursor: pointer;
+    transition: all .2s;
+    border-top: 3px solid;
+  }
+  .summary-badge:hover { transform: translateY(-2px); border-color: var(--border2); }
+  .summary-badge.usd { border-top-color: var(--usd); }
+  .summary-badge.eur { border-top-color: var(--eur); }
+  .summary-badge.gbp { border-top-color: var(--gbp); }
+  .summary-badge.jpy { border-top-color: var(--jpy); }
+  .summary-badge.comm { border-top-color: var(--comm); }
+  .sb-code {
+    font-family: 'Space Mono', monospace;
+    font-size: 14px; font-weight: 700;
+    margin-bottom: 6px;
+  }
+  .sb-code.usd { color: var(--usd); }
+  .sb-code.eur { color: var(--eur); }
+  .sb-code.gbp { color: var(--gbp); }
+  .sb-code.jpy { color: var(--jpy); }
+  .sb-code.comm { color: var(--comm); }
+  .sb-bias { font-size: 10px; }
+
+  /* ── MOBILE ── */
+  @media (max-width: 900px) {
+    .grid-4 { grid-template-columns: repeat(2, 1fr); }
+    .grid-3 { grid-template-columns: repeat(2, 1fr); }
+    .grid-65 { grid-template-columns: 1fr; }
+    .summary-grid { grid-template-columns: repeat(3, 1fr); }
+    header { flex-wrap: wrap; height: auto; padding: 8px 12px; gap: 8px; }
+    nav { flex-wrap: wrap; }
+    main { padding: 12px; }
+  }
+  @media (max-width: 600px) {
+    .grid-4, .grid-3, .grid-2 { grid-template-columns: 1fr; }
+    .summary-grid { grid-template-columns: repeat(2, 1fr); }
+    .ticker-bar { gap: 12px; }
+  }
+
+  /* ── SECTION TITLE ── */
+  .section-title {
+    font-size: 11px; font-weight: 700; letter-spacing: 3px;
+    text-transform: uppercase; color: var(--text3);
+    margin-bottom: 14px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .section-title::after {
+    content: '';
+    flex: 1; height: 1px;
+    background: var(--border);
+  }
+
+  .gap-top { margin-top: 20px; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">FX<span>/</span>FUND</div>
+  <nav>
+    <button class="nav-btn active" onclick="showSection('dashboard')">ダッシュボード</button>
+    <button class="nav-btn" onclick="showSection('calendar')">経済指標</button>
+    <button class="nav-btn" onclick="showSection('fundamental')">ファンダ解説</button>
+    <button class="nav-btn" onclick="showSection('news')">ニュース分析</button>
+    <button class="nav-btn" onclick="showSection('rss')">RSS設定</button>
+  </nav>
+  <div class="header-time" id="headerTime"></div>
+</header>
+
+<main>
+
+<!-- ═══════════════════════ DASHBOARD ═══════════════════════ -->
+<div class="section active" id="section-dashboard">
+  <div class="ticker-bar" id="tickerBar">
+    <div class="ticker-item"><span class="ticker-pair">USD/JPY</span><span class="ticker-val" id="t-usdjpy">151.42</span><span class="ticker-chg up" id="tc-usdjpy">+0.23%</span></div>
+    <div class="ticker-item"><span class="ticker-pair">EUR/JPY</span><span class="ticker-val" id="t-eurjpy">163.85</span><span class="ticker-chg up" id="tc-eurjpy">+0.11%</span></div>
+    <div class="ticker-item"><span class="ticker-pair">GBP/JPY</span><span class="ticker-val" id="t-gbpjpy">191.74</span><span class="ticker-chg dn" id="tc-gbpjpy">-0.08%</span></div>
+    <div class="ticker-item"><span class="ticker-pair">EUR/USD</span><span class="ticker-val" id="t-eurusd">1.0819</span><span class="ticker-chg dn" id="tc-eurusd">-0.12%</span></div>
+    <div class="ticker-item"><span class="ticker-pair">GBP/USD</span><span class="ticker-val" id="t-gbpusd">1.2657</span><span class="ticker-chg up" id="tc-gbpusd">+0.15%</span></div>
+    <div class="ticker-item"><span class="ticker-pair">AUD/USD</span><span class="ticker-val" id="t-audusd">0.6524</span><span class="ticker-chg dn" id="tc-audusd">-0.31%</span></div>
+    <div class="ticker-item"><span class="ticker-pair">USD/CAD</span><span class="ticker-val" id="t-usdcad">1.3568</span><span class="ticker-chg up" id="tc-usdcad">+0.18%</span></div>
+  </div>
+
+  <div class="section-title">通貨別ファンダメンタルスコア</div>
+  <div class="summary-grid">
+    <div class="summary-badge usd" onclick="showSection('fundamental'); setFundTab('usd')">
+      <div class="sb-code usd">USD</div>
+      <div class="sb-bias"><span class="bias-badge bias-bull">BULLISH</span></div>
+    </div>
+    <div class="summary-badge eur" onclick="showSection('fundamental'); setFundTab('eur')">
+      <div class="sb-code eur">EUR</div>
+      <div class="sb-bias"><span class="bias-badge bias-neut">NEUTRAL</span></div>
+    </div>
+    <div class="summary-badge gbp" onclick="showSection('fundamental'); setFundTab('gbp')">
+      <div class="sb-code gbp">GBP</div>
+      <div class="sb-bias"><span class="bias-badge bias-neut">NEUTRAL</span></div>
+    </div>
+    <div class="summary-badge jpy" onclick="showSection('fundamental'); setFundTab('jpy')">
+      <div class="sb-code jpy">JPY</div>
+      <div class="sb-bias"><span class="bias-badge bias-bear">BEARISH</span></div>
+    </div>
+    <div class="summary-badge comm" onclick="showSection('fundamental'); setFundTab('comm')">
+      <div class="sb-code comm">資源国</div>
+      <div class="sb-bias"><span class="bias-badge bias-bear">BEARISH</span></div>
+    </div>
+  </div>
+
+  <div class="grid-65">
+    <div>
+      <div class="section-title">通貨別スコアカード</div>
+      <div class="grid-2">
+        <!-- USD -->
+        <div class="card currency-card usd">
+          <div class="currency-header">
+            <div class="currency-flag">🇺🇸</div>
+            <div><div class="currency-name usd">USD</div><div class="currency-fullname">米ドル</div></div>
+            <span class="bias-badge bias-bull">BULL</span>
+          </div>
+          <div class="meter-row"><span class="meter-label">政策金利</span><div class="meter-bar"><div class="meter-fill" style="width:85%;background:linear-gradient(90deg,#4fc3f7,#81d4fa)"></div></div><span class="meter-val">4.25–4.50%</span></div>
+          <div class="meter-row"><span class="meter-label">10年債利回り</span><div class="meter-bar"><div class="meter-fill" style="width:78%;background:linear-gradient(90deg,#4fc3f7,#81d4fa)"></div></div><span class="meter-val">4.35%</span></div>
+          <div class="meter-row"><span class="meter-label">インフレCPI</span><div class="meter-bar"><div class="meter-fill" style="width:62%;background:linear-gradient(90deg,#ff9800,#ffd54f)"></div></div><span class="meter-val">2.8%</span></div>
+          <div class="meter-row"><span class="meter-label">雇用NFP</span><div class="meter-bar"><div class="meter-fill" style="width:72%;background:linear-gradient(90deg,#4fc3f7,#81d4fa)"></div></div><span class="meter-val">+151K</span></div>
+          <div class="key-levels">
+            <div class="key-level-row"><span class="key-level-label">次回FOMC</span><span class="key-level-val">5月7日</span></div>
+            <div class="key-level-row"><span class="key-level-label">利下げ予想</span><span class="key-level-val">2025年後半</span></div>
+          </div>
+        </div>
+        <!-- EUR -->
+        <div class="card currency-card eur">
+          <div class="currency-header">
+            <div class="currency-flag">🇪🇺</div>
+            <div><div class="currency-name eur">EUR</div><div class="currency-fullname">ユーロ</div></div>
+            <span class="bias-badge bias-neut">NEUT</span>
+          </div>
+          <div class="meter-row"><span class="meter-label">政策金利</span><div class="meter-bar"><div class="meter-fill" style="width:60%;background:linear-gradient(90deg,#81c784,#a5d6a7)"></div></div><span class="meter-val">2.65%</span></div>
+          <div class="meter-row"><span class="meter-label">独10年債</span><div class="meter-bar"><div class="meter-fill" style="width:52%;background:linear-gradient(90deg,#81c784,#a5d6a7)"></div></div><span class="meter-val">2.71%</span></div>
+          <div class="meter-row"><span class="meter-label">インフレCPI</span><div class="meter-bar"><div class="meter-fill" style="width:55%;background:linear-gradient(90deg,#ff9800,#ffd54f)"></div></div><span class="meter-val">2.3%</span></div>
+          <div class="meter-row"><span class="meter-label">GDP成長率</span><div class="meter-bar"><div class="meter-fill" style="width:35%;background:linear-gradient(90deg,#ff7043,#ff8a65)"></div></div><span class="meter-val">+0.9%</span></div>
+          <div class="key-levels">
+            <div class="key-level-row"><span class="key-level-label">次回ECB</span><span class="key-level-val">4月17日</span></div>
+            <div class="key-level-row"><span class="key-level-label">利下げ予想</span><span class="key-level-val">継続的</span></div>
+          </div>
+        </div>
+        <!-- GBP -->
+        <div class="card currency-card gbp">
+          <div class="currency-header">
+            <div class="currency-flag">🇬🇧</div>
+            <div><div class="currency-name gbp">GBP</div><div class="currency-fullname">英ポンド</div></div>
+            <span class="bias-badge bias-neut">NEUT</span>
+          </div>
+          <div class="meter-row"><span class="meter-label">政策金利</span><div class="meter-bar"><div class="meter-fill" style="width:75%;background:linear-gradient(90deg,#ce93d8,#e1bee7)"></div></div><span class="meter-val">4.50%</span></div>
+          <div class="meter-row"><span class="meter-label">英10年債</span><div class="meter-bar"><div class="meter-fill" style="width:70%;background:linear-gradient(90deg,#ce93d8,#e1bee7)"></div></div><span class="meter-val">4.65%</span></div>
+          <div class="meter-row"><span class="meter-label">インフレCPI</span><div class="meter-bar"><div class="meter-fill" style="width:72%;background:linear-gradient(90deg,#ff9800,#ffd54f)"></div></div><span class="meter-val">3.0%</span></div>
+          <div class="meter-row"><span class="meter-label">GDP成長率</span><div class="meter-bar"><div class="meter-fill" style="width:40%;background:linear-gradient(90deg,#ce93d8,#e1bee7)"></div></div><span class="meter-val">+1.1%</span></div>
+          <div class="key-levels">
+            <div class="key-level-row"><span class="key-level-label">次回BOE</span><span class="key-level-val">5月8日</span></div>
+            <div class="key-level-row"><span class="key-level-label">利下げ予想</span><span class="key-level-val">緩やか</span></div>
+          </div>
+        </div>
+        <!-- JPY -->
+        <div class="card currency-card jpy">
+          <div class="currency-header">
+            <div class="currency-flag">🇯🇵</div>
+            <div><div class="currency-name jpy">JPY</div><div class="currency-fullname">日本円</div></div>
+            <span class="bias-badge bias-bear">BEAR</span>
+          </div>
+          <div class="meter-row"><span class="meter-label">政策金利</span><div class="meter-bar"><div class="meter-fill" style="width:8%;background:linear-gradient(90deg,#ffb74d,#ffd54f)"></div></div><span class="meter-val">0.50%</span></div>
+          <div class="meter-row"><span class="meter-label">日10年債</span><div class="meter-bar"><div class="meter-fill" style="width:22%;background:linear-gradient(90deg,#ffb74d,#ffd54f)"></div></div><span class="meter-val">1.53%</span></div>
+          <div class="meter-row"><span class="meter-label">インフレCPI</span><div class="meter-bar"><div class="meter-fill" style="width:45%;background:linear-gradient(90deg,#ff9800,#ffd54f)"></div></div><span class="meter-val">3.7%</span></div>
+          <div class="meter-row"><span class="meter-label">GDP成長率</span><div class="meter-bar"><div class="meter-fill" style="width:30%;background:linear-gradient(90deg,#ffb74d,#ffd54f)"></div></div><span class="meter-val">+1.2%</span></div>
+          <div class="key-levels">
+            <div class="key-level-row"><span class="key-level-label">次回日銀</span><span class="key-level-val">4月30日</span></div>
+            <div class="key-level-row"><span class="key-level-label">利上げ予想</span><span class="key-level-val">慎重姿勢</span></div>
+          </div>
+        </div>
+      </div>
+      <!-- COMM -->
+      <div class="card currency-card comm gap-top">
+        <div class="currency-header">
+          <div class="currency-flag">🌏</div>
+          <div><div class="currency-name comm">資源国通貨</div><div class="currency-fullname">AUD / CAD / NZD / NOK</div></div>
+          <span class="bias-badge bias-bear">BEAR</span>
+        </div>
+        <div class="grid-2" style="margin-bottom:0">
+          <div>
+            <div class="meter-row"><span class="meter-label">AUD金利</span><div class="meter-bar"><div class="meter-fill" style="width:70%;background:linear-gradient(90deg,#a5d6a7,#c8e6c9)"></div></div><span class="meter-val">4.10%</span></div>
+            <div class="meter-row"><span class="meter-label">CAD金利</span><div class="meter-bar"><div class="meter-fill" style="width:60%;background:linear-gradient(90deg,#a5d6a7,#c8e6c9)"></div></div><span class="meter-val">3.00%</span></div>
+          </div>
+          <div>
+            <div class="meter-row"><span class="meter-label">鉄鉱石</span><div class="meter-bar"><div class="meter-fill" style="width:55%;background:linear-gradient(90deg,#ff7043,#ff8a65)"></div></div><span class="meter-val">$103/t</span></div>
+            <div class="meter-row"><span class="meter-label">WTI原油</span><div class="meter-bar"><div class="meter-fill" style="width:68%;background:linear-gradient(90deg,#ff7043,#ff8a65)"></div></div><span class="meter-val">$69.8</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT PANEL: 政策金利比較 & 最新ニュース -->
+    <div>
+      <div class="section-title">政策金利比較</div>
+      <div class="card" style="margin-bottom:16px;">
+        <div class="rate-compare" id="rateCompare">
+          <div class="rate-bar-item">
+            <span class="rate-country" style="color:var(--gbp)">GBP</span>
+            <div class="rate-bar-outer"><div class="rate-bar-inner" style="width:90%;background:linear-gradient(90deg,#9c27b0,#ce93d8)"><span class="rate-bar-val">4.50%</span></div></div>
+          </div>
+          <div class="rate-bar-item">
+            <span class="rate-country" style="color:var(--usd)">USD</span>
+            <div class="rate-bar-outer"><div class="rate-bar-inner" style="width:88%;background:linear-gradient(90deg,#0288d1,#4fc3f7)"><span class="rate-bar-val">4.25-4.50%</span></div></div>
+          </div>
+          <div class="rate-bar-item">
+            <span class="rate-country" style="color:var(--comm)">AUD</span>
+            <div class="rate-bar-outer"><div class="rate-bar-inner" style="width:82%;background:linear-gradient(90deg,#2e7d32,#a5d6a7)"><span class="rate-bar-val">4.10%</span></div></div>
+          </div>
+          <div class="rate-bar-item">
+            <span class="rate-country" style="color:var(--eur)">EUR</span>
+            <div class="rate-bar-outer"><div class="rate-bar-inner" style="width:53%;background:linear-gradient(90deg,#1b5e20,#81c784)"><span class="rate-bar-val">2.65%</span></div></div>
+          </div>
+          <div class="rate-bar-item">
+            <span class="rate-country" style="color:var(--comm)">CAD</span>
+            <div class="rate-bar-outer"><div class="rate-bar-inner" style="width:60%;background:linear-gradient(90deg,#1b5e20,#81c784)"><span class="rate-bar-val">3.00%</span></div></div>
+          </div>
+          <div class="rate-bar-item">
+            <span class="rate-country" style="color:var(--jpy)">JPY</span>
+            <div class="rate-bar-outer"><div class="rate-bar-inner" style="width:10%;background:linear-gradient(90deg,#e65100,#ffb74d)"><span class="rate-bar-val">0.50%</span></div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-title">本日の注目ニュース</div>
+      <div class="card" style="max-height:420px;overflow-y:auto;">
+        <div class="news-feed" id="dashNews">
+          <div class="news-item">
+            <div class="news-item-header">
+              <span class="news-tag tag-usd">USD</span>
+              <span class="news-time">12:30 JST</span>
+            </div>
+            <div class="news-title">PCEデフレーター、前年比2.8%で予想上回る — FRBの利下げ先送り観測強まる</div>
+            <div class="news-impact"><span class="impact-dot impact-high"></span>高インパクト — ドル買い材料</div>
+          </div>
+          <div class="news-item">
+            <div class="news-item-header">
+              <span class="news-tag tag-jpy">JPY</span>
+              <span class="news-time">09:00 JST</span>
+            </div>
+            <div class="news-title">日銀、次回会合での追加利上げに慎重な姿勢 — 植田総裁発言</div>
+            <div class="news-impact"><span class="impact-dot impact-high"></span>高インパクト — 円売り材料</div>
+          </div>
+          <div class="news-item">
+            <div class="news-item-header">
+              <span class="news-tag tag-global">GLOBAL</span>
+              <span class="news-time">08:00 JST</span>
+            </div>
+            <div class="news-title">トランプ関税、4月2日発動 — 相互関税25%の影響を市場が警戒</div>
+            <div class="news-impact"><span class="impact-dot impact-high"></span>高インパクト — リスクオフ、円高圧力</div>
+          </div>
+          <div class="news-item">
+            <div class="news-item-header">
+              <span class="news-tag tag-comm">資源国</span>
+              <span class="news-time">06:30 JST</span>
+            </div>
+            <div class="news-title">中国景気懸念で鉄鉱石・原油下落 — AUD/NZD下押し圧力続く</div>
+            <div class="news-impact"><span class="impact-dot impact-med"></span>中インパクト — 資源国通貨売り</div>
+          </div>
+          <div class="news-item">
+            <div class="news-item-header">
+              <span class="news-tag tag-gbp">GBP</span>
+              <span class="news-time">昨日</span>
+            </div>
+            <div class="news-title">英GDP第4四半期+1.1%、予想と一致 — BOE利下げペースは緩やか</div>
+            <div class="news-impact"><span class="impact-dot impact-med"></span>中インパクト — ポンド中立</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════ CALENDAR ═══════════════════════ -->
+<div class="section" id="section-calendar">
+  <div class="section-title">経済指標カレンダー</div>
+  <div class="cal-filter">
+    <button class="cal-filter-btn active" onclick="filterCal('all',this)">すべて</button>
+    <button class="cal-filter-btn" onclick="filterCal('high',this)">🔴 高インパクト</button>
+    <button class="cal-filter-btn" onclick="filterCal('usd',this)">USD</button>
+    <button class="cal-filter-btn" onclick="filterCal('eur',this)">EUR</button>
+    <button class="cal-filter-btn" onclick="filterCal('gbp',this)">GBP</button>
+    <button class="cal-filter-btn" onclick="filterCal('jpy',this)">JPY</button>
+    <button class="cal-filter-btn" onclick="filterCal('comm',this)">資源国</button>
+  </div>
+  <div class="card">
+    <table class="cal-table" id="calTable">
+      <thead>
+        <tr>
+          <th>時間(JST)</th>
+          <th>通貨</th>
+          <th>インパクト</th>
+          <th>指標名</th>
+          <th style="text-align:right">前回</th>
+          <th style="text-align:right">予想</th>
+          <th style="text-align:right">結果</th>
+          <th>概要</th>
+        </tr>
+      </thead>
+      <tbody id="calBody"></tbody>
+    </table>
+  </div>
+
+  <div class="grid-2 gap-top">
+    <div class="card">
+      <div class="card-title"><span class="dot"></span>経済指標の見方</div>
+      <div style="font-size:12px;color:var(--text2);line-height:1.9">
+        <div style="margin-bottom:8px"><b style="color:var(--green)">結果 &gt; 予想</b> = 経済が予想より強い → 通常その国の通貨買い</div>
+        <div style="margin-bottom:8px"><b style="color:var(--red)">結果 &lt; 予想</b> = 経済が予想より弱い → 通常その国の通貨売り</div>
+        <div style="margin-bottom:8px"><b style="color:var(--yellow)">結果 = 予想</b> = 「織り込み済み」→ 反応薄いことが多い</div>
+        <div><b style="color:var(--red)">🔴 高インパクト</b>指標はスプレッドが広がりやすいため注意</div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="dot"></span>今週のハイライト</div>
+      <div style="font-size:12px;color:var(--text2);line-height:1.9">
+        <div style="margin-bottom:6px">📌 <b style="color:var(--text)">4/2(水)</b> — トランプ関税「解放の日」実施</div>
+        <div style="margin-bottom:6px">📌 <b style="color:var(--text)">4/4(金)</b> — 米国NFP(雇用統計) 21:30 JST</div>
+        <div style="margin-bottom:6px">📌 <b style="color:var(--text)">4/10(木)</b> — 米国CPI 21:30 JST</div>
+        <div style="margin-bottom:6px">📌 <b style="color:var(--text)">4/17(木)</b> — ECB政策決定 21:15 JST</div>
+        <div>📌 <b style="color:var(--text)">4/30(水)</b> — 日銀政策決定</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════ FUNDAMENTAL ═══════════════════════ -->
+<div class="section" id="section-fundamental">
+  <div class="section-title">ファンダメンタル解説パネル</div>
+  <div class="fund-currency-tabs">
+    <button class="fund-tab active" onclick="setFundTab('usd')">🇺🇸 USD</button>
+    <button class="fund-tab" onclick="setFundTab('eur')">🇪🇺 EUR</button>
+    <button class="fund-tab" onclick="setFundTab('gbp')">🇬🇧 GBP</button>
+    <button class="fund-tab" onclick="setFundTab('jpy')">🇯🇵 JPY</button>
+    <button class="fund-tab" onclick="setFundTab('comm')">🌏 資源国</button>
+    <button class="fund-tab" onclick="setFundTab('basics')">📚 基礎知識</button>
+  </div>
+
+  <div id="fund-usd" class="fund-content active">
+    <div class="grid-65">
+      <div>
+        <div class="fund-current">
+          <div><div class="fund-current-label">現在の政策金利</div><div class="fund-current-val" style="color:var(--usd)">4.25 – 4.50%</div></div>
+          <div><div class="fund-current-label">現在の10年債利回り</div><div class="fund-current-val" style="color:var(--usd)">4.35%</div></div>
+          <div><div class="fund-current-label">CPI(インフレ)</div><div class="fund-current-val" style="color:var(--yellow)">2.8%</div></div>
+          <span class="fund-current-trend" style="background:rgba(0,230,118,0.1);color:var(--green)">✦ ドル強</span>
+        </div>
+        <div class="fund-section">
+          <div class="fund-section-title"><span class="fund-section-icon">📈</span>政策金利・長期金利の影響</div>
+          <div class="fund-item">
+            <span class="fund-item-arrow" style="color:var(--green)">↑</span>
+            <div class="fund-item-body">
+              <div class="fund-item-condition">金利が上がると → USDは強くなりやすい</div>
+              <div class="fund-item-effect">高い金利は世界中の投資家にとって魅力的。ドル建て資産に資金が流入し、ドル買いが起きやすい。10年債利回り上昇はその先行指標。</div>
+            </div>
+          </div>
+          <div class="fund-item">
+            <span class="fund-item-arrow" style="color:var(--red)">↓</span>
+            <div class="fund-item-body">
+              <div class="fund-item-condition">利下げ観測が強まると → USDは弱くなりやすい</div>
+              <div class="fund-item-effect">FRBが利下げを示唆すると金利差が縮小し、ドルから資金が流出。新興国や他通貨が買われるリスクオン傾向が出やすい。</div>
+            </div>
+          </div>
+        </div>
+        <div class="fund-section">
+          <div class="fund-section-title"><span class="fund-section-icon">💼</span>雇用・経済指標の影響</div>
+          <div class="fund-item">
+            <span class="fund-item-arrow" style="color:var(--green)">↑</span>
+            <div class="fund-item-body">
+              <div class="fund-item-condition">NFP(雇用統計)が予想を上回る → USD強</div>
+              <div class="fund-item-effect">雇用が強い = 消費活発 = インフレ圧力 = FRB利下げしにくい。月次最大のイベント。毎月第一金曜21:30(JST)に注目。</div>
+            </div>
+          </div>
+          <div class="fund-item">
+            <span class="fund-item-arrow" style="color:var(--green)">↑</span>
+            <div class="fund-item-body">
+              <div class="fund-item-condition">CPI・PCEが高止まり → USD強</div>
+              <div class="fund-item-effect">インフレが持続すると利下げが難しくなる。2025年現在CPIは2.8%で目標2%を上回り継続。ドルの支えになっている。</div>
+            </div>
+          </div>
+        </div>
+        <div class="fund-section">
+          <div class="fund-section-title"><span class="fund-section-icon">🌐</span>地政学・リスクオフの影響</div>
+          <div class="fund-item">
+            <span class="fund-item-arrow" style="color:var(--green)">↑</span>
+            <div class="fund-item-body">
+              <div class="fund-item-condition">世界情勢が不安定になると → USD強</div>
+              <div class="fund-item-effect">ドルは世界の基軸通貨。有事・リスクオフ時には「安全資産」として買われる(有事のドル買い)。ただしトランプ関税などの場合は例外あり。</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="card">
+          <div class="card-title"><span class="dot"></span>現状分析サマリー</div>
+          <div style="font-size:12px;color:var(--text2);line-height:1.8">
+            <div style="margin-bottom:10px">🟢 <b>強材料：</b>高金利維持、インフレ粘着、雇用堅調</div>
+            <div style="margin-bottom:10px">🔴 <b>弱材料：</b>関税による景気鈍化リスク、財政悪化</div>
+            <div style="margin-bottom:10px">⚠️ <b>注目：</b>4月2日の相互関税発動後の影響</div>
+            <div style="padding:10px;background:rgba(0,212,255,0.05);border-radius:6px;border:1px solid rgba(0,212,255,0.2)">
+              <b style="color:var(--accent)">大局バイアス：強気(BULLISH)</b><br>
+              高金利・強雇用が続く限りドル優位。ただし関税ショックでのリスクオフは逆にドル売りになる可能性も。
+            </div>
+          </div>
+        </div>
+        <div class="card gap-top">
+          <div class="card-title"><span class="dot"></span>重要指標チェックリスト</div>
+          <div style="font-size:11px;color:var(--text2);line-height:2">
+            <div>📊 FOMC政策金利 → 年8回</div>
+            <div>📊 NFP雇用統計 → 毎月第1金曜</div>
+            <div>📊 CPI → 毎月中旬</div>
+            <div>📊 PCEデフレーター → 月末</div>
+            <div>📊 GDP速報値 → 四半期</div>
+            <div>📊 ISM製造業/非製造業PMI → 毎月初旬</div>
+            <div>📊 JOLTS(求人件数) → 月中旬</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="fund-eur" class="fund-content">
+    <div class="grid-65">
+      <div>
+        <div class="fund-current">
+          <div><div class="fund-current-label">現在の政策金利</div><div class="fund-current-val" style="color:var(--eur)">2.65%</div></div>
+          <div><div class="fund-current-label">独10年債利回り</div><div class="fund-current-val" style="color:var(--eur)">2.71%</div></div>
+          <div><div class="fund-current-label">CPI(ユーロ圏)</div><div class="fund-current-val" style="color:var(--yellow)">2.3%</div></div>
+          <span class="fund-current-trend" style="background:rgba(255,214,0,0.1);color:var(--yellow)">▷ 中立</span>
+        </div>
+        <div class="fund-section">
+          <div class="fund-section-title"><span class="fund-section-icon">📈</span>ECB政策金利・国債利回りの影響</div>
+          <div class="fund-item">
+            <span class="fund-item-arrow" style="color:var(--red)">↓</span>
+            <div class="fund-item-body">
+              <div class="fund-item-condition">ECBが利下げを継続 → EURは弱くなりやすい</div>
+              <div class="fund-item-effect">2024年以降ECBは利下げサイクルに入っている。USDとの金利差が拡大するとEUR/USDは下落圧力。ドイツ景気後退が続く限り弱材料。</div>
+            </div>
+          </div>
+          <div class="fund-item">
+            <span class="fund-item-arrow" style="color:var(--green)">↑</span>
+            <div class="fund-item-body">
+              <div class="fund-item-condition">ユーロ圏経済回復の兆し → EURが強まる場面も</div>
+              <div class="fund-item-effect">ドイツ財政出動(国防費拡大など)はユーロ圏経済の支えになり得る。PMI回復や輸出拡大でユーロ買い戻しが起きることも。</div>
+            </div>
+          </div>
+        </div>
+        <div class="fund-section">
+          <div class="fund-section-title"><span class="fund-section-icon">🌍</span>地政学・欧州固有リスク</div>
+          <div class="fund-item">
+            <span class="fund-item-arrow" style="color:var(--red)">↓</span>
+            <div class="fund-item-body">
+              <div class="fund-item-condition">ウクライナ情勢悪化・エネルギー危機 → EUR弱</div>
+              <div class="fund-item-effect">欧州はエネルギーコストが高止まり。ウクライナ情勢の不安定化は欧州景気に直撃。リスクオフ時もEURより円やドルが買われやすい。</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="card">
+          <div class="card-title"><span class="dot"></span>現状分析サマリー</div>
+          <div style="font-size:12px;color:var(--text2);line-height:1.8">
+            <div style="margin-bottom:10px">🔴 <b>弱材料：</b>利下げサイクル継続、独景気低迷</div>
+            <div style="margin-bottom:10px">🟢 <b>強材料：</b>インフレ落ち着き、ドイツ財政出動</div>
+            <div style="padding:10px;background:rgba(129,199,132,0.05);border-radius:6px;border:1px solid rgba(129,199,132,0.2)">
+              <b style="color:var(--eur)">大局バイアス：中立(NEUTRAL)</b><br>
+              USD/EUR格差縮小局面だが、欧州固有リスクあり。1.05〜1.09レンジを意識。
+            </div>
+          </div>
+        </div>
+        <div class="card gap-top">
+          <div class="card-title"><span class="dot"></span>重要指標チェックリスト</div>
+          <div style="font-size:11px;color:var(--text2);line-height:2">
+            <div>📊 ECB政策金利 → 年8回</div>
+            <div>📊 ユーロ圏HICP(CPI) → 毎月末</div>
+            <div>📊 独CPI → 毎月中旬</div>
+            <div>📊 ユーロ圏GDP → 四半期</div>
+            <div>📊 独IFO景況感 → 毎月第4月曜</div>
+            <div>📊 ユーロ圏PMI → 毎月中旬</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="fund-gbp" class="fund-content">
+    <div class="grid-65">
+      <div>
+        <div class="fund-current">
+          <div><div class="fund-current-label">現在の政策金利</div><div class="fund-current-val" style="color:var(--gbp)">4.50%</div></div>
+          <div><div class="fund-current-label">英10年債利回り</div><div class="fund-current-val" style="color:var(--gbp)">4.65%</div></div>
+          <div><div class="fund-current-label">英CPI</div><div class="fund-current-val" style="color:var(--orange)">3.0%</div></div>
+          <span class="fund-current-trend" style="background:rgba(255,214,0,0.1);color:var(--yellow)">▷ 中立</span>
+        </div>
+        <div class="fund-section">
+          <div class="fund-section-title"><span class="fund-section-icon">📈</span>BOE政策金利の影響</div>
+          <div class="fund-item">
+            <span class="fund-item-arrow" style="color:var(--green)">↑</span>
+            <div class="fund-item-body">
+              <div class="fund-item-condition">英金利が他国より高い水準を維持 → GBP強</div>
+              <div class="fund-item-effect">英国の4.50%という高金利は欧州よりはるかに高く、ポンド資産の魅力が高い。インフレが粘着する限りBOEは利下げしにくい。</div>
+            </div>
+          </div>
+          <div class="fund-item">
+            <span class="fund-item-arrow" style="color:var(--red)">↓</span>
+            <div class="fund-item-body">
+              <div class="fund-item-condition">英財政懸念・スタグフレーション → GBP弱</div>
+              <div class="fund-item-effect">高インフレかつ低成長という「スタグフレーション」懸念が英国最大のリスク。財政悪化や国債利回り急上昇は2022年のトラス危機の再現懸念を生む。</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="card">
+          <div class="card-title"><span class="dot"></span>現状分析サマリー</div>
+          <div style="font-size:12px;color:var(--text2);line-height:1.8">
+            <div style="margin-bottom:10px">🟢 <b>強材料：</b>高金利継続、インフレ粘着でBOE慎重</div>
+            <div style="margin-bottom:10px">🔴 <b>弱材料：</b>景気低迷、財政悪化リスク</div>
+            <div style="padding:10px;background:rgba(206,147,216,0.05);border-radius:6px;border:1px solid rgba(206,147,216,0.2)">
+              <b style="color:var(--gbp)">大局バイアス：中立(NEUTRAL)</b><br>
+              高金利が支えだが成長が弱い。GBP/USDは1.25〜1.29レンジ。
+            </div>
+          </div>
+        </div>
+        <div class="card gap-top">
+          <div class="card-title"><span class="dot"></span>重要指標チェックリスト</div>
+          <div style="font-size:11px;color:var(--text2);line-height:2">
+            <div>📊 BOE政策金利 → 年8回</div>
+            <div>📊 英CPI → 毎月中旬</div>
+            <div>📊 英雇用統計 → 毎月中旬</div>
+            <div>📊 英GDP → 四半期/月次</div>
+            <div>📊 英小売売上高 → 毎月</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="fund-jpy" class="fund-content">
+    <div class="grid-65">
+      <div>
+        <div class="fund-current">
+          <div><div class="fund-current-label">現在の政策金利</div><div class="fund-current-val" style="color:var(--jpy)">0.50%</div></div>
+          <div><div class="fund-current-label">日10年債利回り</div><div class="fund-current-val" style="color:var(--jpy)">1.53%</div></div>
+          <div><div class="fund-current-label">日本CPI</div><div class="fund-current-val" style="color:var(--orange)">3.7%</div></div>
+          <span class="fund-current-trend" style="background:rgba(255,68,68,0.1);color:var(--red)">▼ 弱気</span>
+        </div>
+        <div class="fund-section">
+          <div class="fund-section-title"><span class="fund-section-icon">📉</span>超低金利・金利差の影響</div>
+          <div class="fund-item">
+            <span class="fund-item-arrow" style="color:var(--red)">↓</span>
+            <div class="fund-item-body">
+              <div class="fund-item-condition">日米金利差が大きい → 円安圧力</div>
+              <div class="fund-item-effect">JPYの0.5%に対しUSDは4.25-4.50%と大きな金利差がある。投資家は円を借りてドルで運用する「円キャリー取引」をするため円売りが続きやすい。</div>
+            </div>
+          </div>
+          <div class="fund-item">
+            <span class="fund-item-arrow" style="color:var(--green)">↑</span>
+            <div class="fund-item-body">
+              <div class="fund-item-condition">日銀が利上げ → 円高方向</div>
+              <div class="fund-item-effect">日銀の利上げはキャリー取引の巻き戻しを引き起こし、急速な円高につながる。2024年8月の円キャリー崩壊が典型例(150円台→141円台)。</div>
+            </div>
+          </div>
+          <div class="fund-item">
+            <span class="fund-item-arrow" style="color:var(--green)">↑</span>
+            <div class="fund-item-body">
+              <div class="fund-item-condition">リスクオフ(株安・地政学リスク) → 円高</div>
+              <div class="fund-item-effect">円はリスクオフ時の「安全資産」。キャリー取引の解消が起きやすく、世界的な株安・地政学リスク高まりで急激な円買いが発生しやすい。</div>
+            </div>
+          </div>
+        </div>
+        <div class="fund-section">
+          <div class="fund-section-title"><span class="fund-section-icon">🏛️</span>為替介入リスク</div>
+          <div class="fund-item">
+            <span class="fund-item-arrow" style="color:var(--yellow)">!</span>
+            <div class="fund-item-body">
+              <div class="fund-item-condition">155〜160円台では財務省の介入警戒</div>
+              <div class="fund-item-effect">過去の介入水準を超えてくると口先介入→実弾介入のリスクが高まる。2024年は157円台で大規模介入実施。上値追いには注意が必要。</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="card">
+          <div class="card-title"><span class="dot"></span>現状分析サマリー</div>
+          <div style="font-size:12px;color:var(--text2);line-height:1.8">
+            <div style="margin-bottom:10px">🔴 <b>弱材料：</b>超低金利、大幅な日米金利差</div>
+            <div style="margin-bottom:10px">🟢 <b>強材料：</b>リスクオフ時の避難通貨、介入リスク</div>
+            <div style="padding:10px;background:rgba(255,183,77,0.05);border-radius:6px;border:1px solid rgba(255,183,77,0.2)">
+              <b style="color:var(--jpy)">大局バイアス：弱気(BEARISH)</b><br>
+              金利差が続く限り円安バイアス。ただしリスクオフ急変には注意。日銀のサプライズ利上げで急騰する可能性あり。
+            </div>
+          </div>
+        </div>
+        <div class="card gap-top">
+          <div class="card-title"><span class="dot"></span>重要指標チェックリスト</div>
+          <div style="font-size:11px;color:var(--text2);line-height:2">
+            <div>📊 日銀政策決定会合 → 年8回</div>
+            <div>📊 植田総裁発言・展望レポート</div>
+            <div>📊 日本CPI → 毎月中旬</div>
+            <div>📊 日本GDP → 四半期</div>
+            <div>📊 財務省の為替介入警戒ライン</div>
+            <div>📊 春闘賃上げ率 → 円高材料になりやすい</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="fund-comm" class="fund-content">
+    <div class="fund-section">
+      <div class="fund-section-title"><span class="fund-section-icon">⛏️</span>資源国通貨とは — AUD / CAD / NZD / NOK</div>
+      <div style="font-size:12px;color:var(--text2);line-height:1.8;margin-bottom:10px">
+        資源国通貨は「商品相場と連動」するという特徴がある。中国経済の動向が特にAUD/NZDに大きく影響する。
+      </div>
+    </div>
+    <div class="grid-2">
+      <div>
+        <div class="fund-section">
+          <div class="fund-section-title"><span class="fund-section-icon">🇦🇺</span>AUD (豪ドル)</div>
+          <div class="fund-item">
+            <span class="fund-item-arrow" style="color:var(--green)">↑</span>
+            <div class="fund-item-body">
+              <div class="fund-item-condition">中国経済好調・鉄鉱石高 → AUD強</div>
+              <div class="fund-item-effect">中国はオーストラリア最大の輸出先。中国のPMI改善や鉄鉱石価格上昇はAUDの買い材料。</div>
+            </div>
+          </div>
+          <div class="fund-item">
+            <span class="fund-item-arrow" style="color:var(--red)">↓</span>
+            <div class="fund-item-body">
+              <div class="fund-item-condition">リスクオフ・中国景気悪化 → AUD弱</div>
+              <div class="fund-item-effect">リスク通貨のため世界的リスクオフで売られやすい。鉄鉱石・石炭価格下落が直撃。</div>
+            </div>
+          </div>
+        </div>
+        <div class="fund-section">
+          <div class="fund-section-title"><span class="fund-section-icon">🇨🇦</span>CAD (カナダドル)</div>
+          <div class="fund-item">
+            <span class="fund-item-arrow" style="color:var(--green)">↑</span>
+            <div class="fund-item-body">
+              <div class="fund-item-condition">原油価格上昇 → CAD強</div>
+              <div class="fund-item-effect">カナダは世界有数の石油輸出国。WTI原油価格の上昇がCADを支える。USD/CADは原油と逆相関。</div>
+            </div>
+          </div>
+          <div class="fund-item">
+            <span class="fund-item-arrow" style="color:var(--red)">↓</span>
+            <div class="fund-item-body">
+              <div class="fund-item-condition">米国景気悪化・関税リスク → CAD弱</div>
+              <div class="fund-item-effect">米国はカナダ最大の貿易相手。トランプ関税の影響を最も受ける通貨の一つ。</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="card">
+          <div class="card-title"><span class="dot"></span>現状分析サマリー(資源国通貨)</div>
+          <div style="font-size:12px;color:var(--text2);line-height:1.8">
+            <div style="margin-bottom:10px">🔴 <b>弱材料：</b>中国景気懸念、原油安、トランプ関税リスク</div>
+            <div style="margin-bottom:10px">🟢 <b>強材料：</b>各国の比較的高い政策金利</div>
+            <div style="padding:10px;background:rgba(165,214,167,0.05);border-radius:6px;border:1px solid rgba(165,214,167,0.2)">
+              <b style="color:var(--comm)">大局バイアス：弱気(BEARISH)</b><br>
+              中国景気懸念と関税リスクが重石。資源価格の回復なければ上値重い。
+            </div>
+          </div>
+        </div>
+        <div class="card gap-top">
+          <div class="card-title"><span class="dot"></span>重要指標チェックリスト</div>
+          <div style="font-size:11px;color:var(--text2);line-height:2">
+            <div>📊 中国PMI(製造業/非製造業) → 毎月末</div>
+            <div>📊 WTI/Brent原油価格</div>
+            <div>📊 鉄鉱石スポット価格</div>
+            <div>📊 RBA政策金利(AUD) → 年8回</div>
+            <div>📊 BOC政策金利(CAD) → 年8回</div>
+            <div>📊 豪雇用統計 → 毎月中旬</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="fund-basics" class="fund-content">
+    <div class="grid-2">
+      <div>
+        <div class="fund-section">
+          <div class="fund-section-title"><span class="fund-section-icon">📚</span>国債・長期金利の基礎</div>
+          <div class="fund-item">
+            <span class="fund-item-arrow" style="color:var(--accent)">?</span>
+            <div class="fund-item-body">
+              <div class="fund-item-condition">国債とは？</div>
+              <div class="fund-item-effect">政府が資金調達のために発行する債券。「10年物国債」が最も注目される。金利(利回り)はその国の経済・金融政策を反映する温度計のようなもの。</div>
+            </div>
+          </div>
+          <div class="fund-item">
+            <span class="fund-item-arrow" style="color:var(--accent)">?</span>
+            <div class="fund-item-body">
+              <div class="fund-item-condition">長期金利と為替の関係</div>
+              <div class="fund-item-effect">長期金利が上がる = その国の通貨が買われやすい。理由は投資リターンが高くなり外国から資金が流入するから。逆に下がると通貨売り材料。</div>
+            </div>
+          </div>
+          <div class="fund-item">
+            <span class="fund-item-arrow" style="color:var(--accent)">?</span>
+            <div class="fund-item-body">
+              <div class="fund-item-condition">金利差(スプレッド)が重要</div>
+              <div class="fund-item-effect">たとえばUSが4.5%、JPYが0.5%なら差は4.0%。この差が大きいほどキャリートレードが活発化し、低金利通貨が売られ高金利通貨が買われる。</div>
+            </div>
+          </div>
+        </div>
+        <div class="fund-section">
+          <div class="fund-section-title"><span class="fund-section-icon">🔄</span>リスクオン / リスクオフ</div>
+          <div class="fund-item">
+            <span class="fund-item-arrow" style="color:var(--green)">↑</span>
+            <div class="fund-item-body">
+              <div class="fund-item-condition">リスクオン(株高・好況)</div>
+              <div class="fund-item-effect">投資家がリスクを取る状態。高金利通貨・資源国通貨が買われる。AUD・NZD・CADに有利。</div>
+            </div>
+          </div>
+          <div class="fund-item">
+            <span class="fund-item-arrow" style="color:var(--red)">↓</span>
+            <div class="fund-item-body">
+              <div class="fund-item-condition">リスクオフ(株安・不況懸念)</div>
+              <div class="fund-item-effect">投資家が安全を求める状態。JPY・USD・CHFが買われやすい。「有事の円買い・ドル買い」。</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="fund-section">
+          <div class="fund-section-title"><span class="fund-section-icon">🏛️</span>中央銀行と金融政策</div>
+          <div class="fund-item">
+            <span class="fund-item-arrow" style="color:var(--accent)">→</span>
+            <div class="fund-item-body">
+              <div class="fund-item-condition">ハト派(利下げ方向)とは</div>
+              <div class="fund-item-effect">景気刺激を重視し利下げや量的緩和を好む姿勢。通貨安要因になりやすい。</div>
+            </div>
+          </div>
+          <div class="fund-item">
+            <span class="fund-item-arrow" style="color:var(--accent)">→</span>
+            <div class="fund-item-body">
+              <div class="fund-item-condition">タカ派(利上げ方向)とは</div>
+              <div class="fund-item-effect">インフレ抑制を重視し利上げを好む姿勢。通貨高要因になりやすい。FRB議長の発言をチェック。</div>
+            </div>
+          </div>
+          <div class="fund-item">
+            <span class="fund-item-arrow" style="color:var(--accent)">→</span>
+            <div class="fund-item-body">
+              <div class="fund-item-condition">フォワードガイダンスとは</div>
+              <div class="fund-item-effect">中央銀行が将来の金融政策の方向性を事前に示すこと。「より長く高金利を維持」等の発言で市場が動く。</div>
+            </div>
+          </div>
+        </div>
+        <div class="fund-section">
+          <div class="fund-section-title"><span class="fund-section-icon">📊</span>重要経済指標まとめ</div>
+          <table style="width:100%;font-size:11px;color:var(--text2);border-collapse:collapse">
+            <tr style="border-bottom:1px solid var(--border)">
+              <td style="padding:6px 4px;color:var(--accent);font-weight:700">指標</td>
+              <td style="padding:6px 4px;color:var(--accent);font-weight:700">上振れ時の影響</td>
+            </tr>
+            <tr style="border-bottom:1px solid var(--border)"><td style="padding:6px 4px">CPI(消費者物価)</td><td style="padding:6px 4px;color:var(--green)">→ 通貨高(利上げ圧力)</td></tr>
+            <tr style="border-bottom:1px solid var(--border)"><td style="padding:6px 4px">GDP成長率</td><td style="padding:6px 4px;color:var(--green)">→ 通貨高</td></tr>
+            <tr style="border-bottom:1px solid var(--border)"><td style="padding:6px 4px">雇用統計</td><td style="padding:6px 4px;color:var(--green)">→ 通貨高</td></tr>
+            <tr style="border-bottom:1px solid var(--border)"><td style="padding:6px 4px">PMI景況感</td><td style="padding:6px 4px;color:var(--green)">→ 通貨高</td></tr>
+            <tr style="border-bottom:1px solid var(--border)"><td style="padding:6px 4px">貿易収支</td><td style="padding:6px 4px;color:var(--green)">→ 黒字拡大で通貨高</td></tr>
+            <tr><td style="padding:6px 4px">小売売上高</td><td style="padding:6px 4px;color:var(--green)">→ 消費強く通貨高</td></tr>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════ NEWS ANALYSIS ═══════════════════════ -->
+<div class="section" id="section-news">
+  <div class="section-title">ニュース分析 — AI powered by Claude</div>
+  <div class="grid-65">
+    <div>
+      <div class="card" style="margin-bottom:16px">
+        <div class="card-title"><span class="dot"></span>ニュースを貼り付けてAI分析</div>
+        <textarea class="news-input-area" id="newsInput" placeholder="分析したいニュース記事・ヘッドラインを貼り付けてください。
+
+例：
+・「FRBのパウエル議長は利下げを急ぐ必要はないと述べた」
+・「米国の2月CPI前年比2.8%、予想2.9%を下回る」
+・「日銀、3月会合での利上げを見送り」
+
+複数のニュースをまとめて入力するとより精度の高い分析が得られます。"></textarea>
+        <div style="display:flex;gap:10px;margin-top:10px;align-items:center">
+          <button class="btn-primary" id="analyzeBtn" onclick="analyzeNews()">
+            ⚡ AI分析を実行
+          </button>
+          <button class="btn-secondary" onclick="document.getElementById('newsInput').value=''">クリア</button>
+          <div style="margin-left:auto;font-size:10px;color:var(--text3)">Claude Sonnet APIを使用</div>
+        </div>
+        <div id="analysisOutput"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-title"><span class="dot"></span>最新RSSニュース一覧</div>
+        <div class="news-feed" id="rssFeed">
+          <div class="news-item">
+            <div class="news-item-header">
+              <span class="news-tag tag-usd">USD</span>
+              <span class="news-tag" style="background:rgba(255,255,255,0.05);color:var(--text3);font-size:8px">Reuters</span>
+              <span class="news-time">14:23 JST</span>
+            </div>
+            <div class="news-title">Fed's Powell: "We don't need to be in a hurry to adjust our policy stance"</div>
+            <div style="display:flex;gap:8px;margin-top:6px">
+              <div class="news-impact"><span class="impact-dot impact-high"></span>高インパクト</div>
+              <button onclick="loadToAnalysis(this)" data-text="FRBのパウエル議長：「政策スタンスを調整する急ぐ必要はない」と発言。利下げに慎重な姿勢を維持。" style="background:none;border:1px solid var(--border2);border-radius:4px;padding:2px 8px;font-size:10px;color:var(--text3);cursor:pointer">→ AI分析へ</button>
+            </div>
+          </div>
+          <div class="news-item">
+            <div class="news-item-header">
+              <span class="news-tag tag-global">GLOBAL</span>
+              <span class="news-tag" style="background:rgba(255,255,255,0.05);color:var(--text3);font-size:8px">Bloomberg</span>
+              <span class="news-time">12:01 JST</span>
+            </div>
+            <div class="news-title">Trump's tariff plan targets 'reciprocal' levies on April 2, triggering global market concerns</div>
+            <div style="display:flex;gap:8px;margin-top:6px">
+              <div class="news-impact"><span class="impact-dot impact-high"></span>高インパクト</div>
+              <button onclick="loadToAnalysis(this)" data-text="トランプ大統領が4月2日に相互関税を発動予定。世界的な貿易摩擦が懸念され、リスクオフムードが広がっている。" style="background:none;border:1px solid var(--border2);border-radius:4px;padding:2px 8px;font-size:10px;color:var(--text3);cursor:pointer">→ AI分析へ</button>
+            </div>
+          </div>
+          <div class="news-item">
+            <div class="news-item-header">
+              <span class="news-tag tag-jpy">JPY</span>
+              <span class="news-tag" style="background:rgba(255,255,255,0.05);color:var(--text3);font-size:8px">Nikkei</span>
+              <span class="news-time">09:30 JST</span>
+            </div>
+            <div class="news-title">日銀、4月会合での追加利上げに慎重 — 外部環境リスクを注視</div>
+            <div style="display:flex;gap:8px;margin-top:6px">
+              <div class="news-impact"><span class="impact-dot impact-high"></span>高インパクト</div>
+              <button onclick="loadToAnalysis(this)" data-text="日銀が4月の政策決定会合での追加利上げに慎重な姿勢。トランプ関税など外部環境リスクを注視している。" style="background:none;border:1px solid var(--border2);border-radius:4px;padding:2px 8px;font-size:10px;color:var(--text3);cursor:pointer">→ AI分析へ</button>
+            </div>
+          </div>
+          <div class="news-item">
+            <div class="news-item-header">
+              <span class="news-tag tag-comm">AUD</span>
+              <span class="news-tag" style="background:rgba(255,255,255,0.05);color:var(--text3);font-size:8px">AFR</span>
+              <span class="news-time">07:15 JST</span>
+            </div>
+            <div class="news-title">Iron ore drops below $100/t on weak China manufacturing PMI data</div>
+            <div style="display:flex;gap:8px;margin-top:6px">
+              <div class="news-impact"><span class="impact-dot impact-med"></span>中インパクト</div>
+              <button onclick="loadToAnalysis(this)" data-text="鉄鉱石価格が100ドルを割り込む。中国の製造業PMIが弱い数字となり、豪ドルへの売り圧力が高まっている。" style="background:none;border:1px solid var(--border2);border-radius:4px;padding:2px 8px;font-size:10px;color:var(--text3);cursor:pointer">→ AI分析へ</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="card" style="margin-bottom:16px">
+        <div class="card-title"><span class="dot"></span>本日のAI総合分析</div>
+        <div id="dailySummaryOutput">
+          <div style="text-align:center;padding:20px">
+            <button class="btn-primary" style="margin:0 auto" onclick="generateDailySummary()">
+              🌅 本日の総合分析を生成
+            </button>
+            <div style="margin-top:10px;font-size:11px;color:var(--text3)">全通貨のファンダメンタル状況を<br>AIが一括分析します</div>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title"><span class="dot"></span>分析のポイント</div>
+        <div style="font-size:11px;color:var(--text2);line-height:1.9">
+          <div style="margin-bottom:8px">💡 ニュース分析では以下を確認</div>
+          <div style="padding-left:8px">
+            <div>① どの通貨に影響するか</div>
+            <div>② 強材料か弱材料か</div>
+            <div>③ 即時反応か中長期影響か</div>
+            <div>④ 市場の織り込み度合い</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════ RSS SETTINGS ═══════════════════════ -->
+<div class="section" id="section-rss">
+  <div class="section-title">RSSフィード設定</div>
+  <div class="grid-2">
+    <div>
+      <div class="card">
+        <div class="card-title"><span class="dot"></span>接続中のフィード</div>
+        <div id="rssSources">
+          <div class="rss-source">
+            <div class="rss-dot rss-active"></div>
+            <div class="rss-name">Reuters — 為替・金融ニュース</div>
+            <span class="rss-count">12件</span>
+            <span class="rss-time">2分前</span>
+          </div>
+          <div class="rss-source">
+            <div class="rss-dot rss-active"></div>
+            <div class="rss-name">Bloomberg Markets RSS</div>
+            <span class="rss-count">8件</span>
+            <span class="rss-time">5分前</span>
+          </div>
+          <div class="rss-source">
+            <div class="rss-dot rss-active"></div>
+            <div class="rss-name">日経新聞 — 為替・金融</div>
+            <span class="rss-count">6件</span>
+            <span class="rss-time">8分前</span>
+          </div>
+          <div class="rss-source">
+            <div class="rss-dot rss-pending"></div>
+            <div class="rss-name">FX Street — Economic Calendar</div>
+            <span class="rss-count">接続中...</span>
+            <span class="rss-time">—</span>
+          </div>
+          <div class="rss-source">
+            <div class="rss-dot rss-active"></div>
+            <div class="rss-name">Investing.com — News RSS</div>
+            <span class="rss-count">15件</span>
+            <span class="rss-time">1分前</span>
+          </div>
+        </div>
+        <div style="margin-top:14px;display:flex;gap:8px">
+          <input type="text" placeholder="RSSフィードURLを追加..." style="flex:1;background:var(--bg2);border:1px solid var(--border2);border-radius:8px;padding:8px 12px;color:var(--text);font-size:12px;font-family:'Noto Sans JP',sans-serif">
+          <button class="btn-primary" style="white-space:nowrap">追加</button>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="card">
+        <div class="card-title"><span class="dot"></span>更新・通知設定</div>
+        <div style="font-size:12px;color:var(--text2);line-height:2">
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border)">
+            <span>自動更新間隔</span>
+            <select style="background:var(--bg2);border:1px solid var(--border2);border-radius:6px;padding:4px 8px;color:var(--text);font-size:11px">
+              <option>5分</option><option selected>10分</option><option>30分</option>
+            </select>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border)">
+            <span>高インパクト指標通知</span>
+            <div style="width:36px;height:20px;background:var(--accent);border-radius:10px;position:relative;cursor:pointer"><div style="width:16px;height:16px;background:white;border-radius:50%;position:absolute;right:2px;top:2px"></div></div>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border)">
+            <span>AIによる自動分析</span>
+            <div style="width:36px;height:20px;background:var(--accent);border-radius:10px;position:relative;cursor:pointer"><div style="width:16px;height:16px;background:white;border-radius:50%;position:absolute;right:2px;top:2px"></div></div>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0">
+            <span>API キー</span>
+            <span style="font-size:11px;color:var(--green)">✓ サーバー側で設定済み</span>
+          </div>
+        </div>
+        <button class="btn-primary" style="margin-top:12px" onclick="saveSettings()">設定を保存</button>
+      </div>
+      <div class="card gap-top">
+        <div class="card-title"><span class="dot"></span>おすすめRSSソース</div>
+        <div style="font-size:11px;color:var(--text2);line-height:2">
+          <div>🔗 https://feeds.reuters.com/reuters/businessNews</div>
+          <div>🔗 https://www.forexfactory.com/rss</div>
+          <div>🔗 https://www.fxstreet.com/rss/news</div>
+          <div>🔗 https://www.investing.com/rss/news.rss</div>
+          <div>🔗 https://www3.nhk.or.jp/rss/news/cat6.xml (NHK経済)</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</main>
+
+<script>
+// ─── TIME ───
+function updateTime() {
+  const now = new Date();
+  const jst = new Date(now.toLocaleString('en-US', {timeZone:'Asia/Tokyo'}));
+  const ny = new Date(now.toLocaleString('en-US', {timeZone:'America/New_York'}));
+  const lo = new Date(now.toLocaleString('en-US', {timeZone:'Europe/London'}));
+  const fmt = d => d.toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit'});
+  document.getElementById('headerTime').innerHTML =
+    `<b>JST</b> ${fmt(jst)} &nbsp;<b>NY</b> ${fmt(ny)} &nbsp;<b>LON</b> ${fmt(lo)}`;
+}
+setInterval(updateTime, 1000); updateTime();
+
+// ─── NAV ───
+function showSection(id) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('section-' + id).classList.add('active');
+  const btns = document.querySelectorAll('.nav-btn');
+  const labels = ['dashboard','calendar','fundamental','news','rss'];
+  btns[labels.indexOf(id)].classList.add('active');
+}
+
+// ─── FUND TABS ───
+function setFundTab(id) {
+  document.querySelectorAll('.fund-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.fund-content').forEach(c => c.classList.remove('active'));
+  const tabs = document.querySelectorAll('.fund-tab');
+  const ids = ['usd','eur','gbp','jpy','comm','basics'];
+  tabs[ids.indexOf(id)].classList.add('active');
+  document.getElementById('fund-' + id).classList.add('active');
+  showSection('fundamental');
+}
+
+// ─── CALENDAR DATA ───
+const calData = [
+  {time:'21:30 3/28',cur:'USD',imp:'h',name:'PCEデフレーター(前年比)',prev:'2.6%',fore:'2.7%',actual:'2.8%',result:'beat',note:'FRB注目インフレ指標。予想上振れでドル買い'},
+  {time:'21:30 3/28',cur:'USD',imp:'h',name:'個人消費支出',prev:'+0.2%',fore:'+0.3%',actual:'+0.4%',result:'beat',note:'消費堅調でドル支持材料'},
+  {time:'22:00 3/28',cur:'USD',imp:'m',name:'ミシガン大消費者信頼感',prev:'64.7',fore:'63.5',actual:'62.5',result:'miss',note:'消費者マインド悪化'},
+  {time:'08:30 4/1',cur:'JPY',imp:'m',name:'日銀短観(大企業製造業)',prev:'14',fore:'13',actual:'—',note:'企業景況感を示す'},
+  {time:'17:55 4/1',cur:'EUR',imp:'m',name:'独製造業PMI(確報)',prev:'46.5',fore:'46.9',actual:'—',note:'製造業景況感'},
+  {time:'18:30 4/1',cur:'GBP',imp:'m',name:'英製造業PMI(確報)',prev:'46.9',fore:'44.6',actual:'—',note:'製造業景況感'},
+  {time:'23:00 4/1',cur:'USD',imp:'h',name:'ISM製造業景況指数',prev:'50.3',fore:'49.8',actual:'—',note:'50超=拡大。製造業の先行指標'},
+  {time:'—   4/2',cur:'GLOBAL',imp:'h',name:'🚨 トランプ相互関税発動「解放の日」',prev:'—',fore:'25%',actual:'—',note:'全通貨に影響。リスクオフ要因'},
+  {time:'21:15 4/3',cur:'USD',imp:'m',name:'ADP民間雇用',prev:'+77K',fore:'+120K',actual:'—',note:'NFPの先行指標'},
+  {time:'21:30 4/3',cur:'USD',imp:'m',name:'新規失業保険申請件数',prev:'224K',fore:'225K',actual:'—',note:'週次雇用データ'},
+  {time:'23:00 4/3',cur:'USD',imp:'h',name:'ISM非製造業景況指数',prev:'53.5',fore:'52.8',actual:'—',note:'50超=拡大。サービス業の先行指標'},
+  {time:'21:30 4/4',cur:'USD',imp:'h',name:'🔴 非農業部門雇用者数(NFP)',prev:'+151K',fore:'+140K',actual:'—',note:'月最重要指標。ドル最大の動意'},
+  {time:'21:30 4/4',cur:'USD',imp:'h',name:'失業率',prev:'4.1%',fore:'4.1%',actual:'—',note:'雇用市場の健全性指標'},
+  {time:'21:30 4/4',cur:'CAD',imp:'h',name:'カナダ雇用統計',prev:'+1.1K',fore:'+10K',actual:'—',note:'CAD重要指標'},
+  {time:'21:30 4/10',cur:'USD',imp:'h',name:'🔴 CPI(前年比)',prev:'2.8%',fore:'2.6%',actual:'—',note:'インフレの王様。FRB政策を左右'},
+  {time:'21:30 4/10',cur:'USD',imp:'m',name:'コアCPI(前年比)',prev:'3.1%',fore:'3.0%',actual:'—',note:'変動の大きい食品・エネルギー除く'},
+  {time:'17:30 4/16',cur:'GBP',imp:'h',name:'英CPI(前年比)',prev:'2.8%',fore:'2.9%',actual:'—',note:'BOE政策を左右するインフレ指標'},
+  {time:'21:15 4/17',cur:'EUR',imp:'h',name:'🔴 ECB政策金利決定',prev:'2.65%',fore:'2.40%',actual:'—',note:'追加利下げの可否が焦点'},
+  {time:'21:30 4/17',cur:'USD',imp:'h',name:'小売売上高(前月比)',prev:'-0.9%',fore:'+0.7%',actual:'—',note:'消費動向の重要指標'},
+  {time:'全日 4/30',cur:'JPY',imp:'h',name:'🔴 日銀政策決定会合',prev:'0.50%',fore:'0.50%',actual:'—',note:'追加利上げなければ円売り材料'},
+];
+
+function renderCalendar(filter) {
+  const tbody = document.getElementById('calBody');
+  const impMap = {h:'imp-h',m:'imp-m',l:'imp-l'};
+  const tagMap = {USD:'tag-usd',EUR:'tag-eur',GBP:'tag-gbp',JPY:'tag-jpy',CAD:'tag-comm',AUD:'tag-comm',GLOBAL:'tag-global'};
+  const filtered = filter === 'all' ? calData :
+    filter === 'high' ? calData.filter(d=>d.imp==='h') :
+    filter === 'comm' ? calData.filter(d=>['AUD','CAD','NZD'].includes(d.cur)) :
+    calData.filter(d=>d.cur.toUpperCase()===filter.toUpperCase());
+  tbody.innerHTML = filtered.map(d => `
+    <tr>
+      <td class="cal-time">${d.time}</td>
+      <td><span class="news-tag ${tagMap[d.cur]||'tag-global'}" style="font-size:9px">${d.cur}</span></td>
+      <td><span class="imp-badge ${impMap[d.imp]}"></span></td>
+      <td class="cal-event">${d.name}</td>
+      <td class="cal-prev">${d.prev}</td>
+      <td class="cal-fore" style="color:var(--text2)">${d.fore}</td>
+      <td class="cal-actual ${d.result||''}">${d.actual}</td>
+      <td style="font-size:10px;color:var(--text3);max-width:200px">${d.note}</td>
+    </tr>`).join('');
+}
+renderCalendar('all');
+
+function filterCal(f, btn) {
+  document.querySelectorAll('.cal-filter-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderCalendar(f);
+}
+
+// ─── AI ANALYSIS ───
+function getApiKey() {
+  return document.getElementById('apiKeyInput')?.value ||
+    localStorage.getItem('fx_api_key') || '';
+}
+
+function loadToAnalysis(btn) {
+  document.getElementById('newsInput').value = btn.dataset.text;
+  showSection('news');
+}
+
+async function analyzeNews() {
+  const text = document.getElementById('newsInput').value.trim();
+  if (!text) { alert('ニュースを入力してください'); return; }
+  const apiKey = getApiKey();
+  const btn = document.getElementById('analyzeBtn');
+  const out = document.getElementById('analysisOutput');
+
+  btn.disabled = true;
+  out.innerHTML = `<div class="ai-box"><div class="ai-box-title"><div class="ai-pulse"></div>AI分析中...</div><div class="ai-loading"><span></span><span></span><span></span>&nbsp;Claude が分析しています</div></div>`;
+
+  const prompt = `あなたはFXファンダメンタル分析の専門家です。以下のニュースを分析して、各通貨への影響を日本語で教えてください。
+
+ニュース:
+${text}
+
+以下の形式で回答してください：
+
+【ニュースの要点】
+（2〜3文で要約）
+
+【各通貨への影響】
+- USD(米ドル)：強/弱/中立 — 理由
+- EUR(ユーロ)：強/弱/中立 — 理由
+- GBP(英ポンド)：強/弱/中立 — 理由
+- JPY(円)：強/弱/中立 — 理由
+- 資源国通貨：強/弱/中立 — 理由
+
+【注目すべき通貨ペア】
+（最も動きやすいペアと方向性）
+
+【総合判断】
+（リスクオン/オフ、大局的なバイアス）`;
+
+  try {
+    const res = await fetch('/api/claude', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({
+        max_tokens: 1000,
+        messages: [{role:'user', content: prompt}]
+      })
+    });
+
+    const data = await res.json();
+    const txt = data.content?.[0]?.text || 'エラー：応答がありません';
+
+    out.innerHTML = `
+      <div class="analysis-result">
+        <div class="analysis-header">
+          <div class="ai-pulse"></div>
+          <div class="analysis-title">AI分析完了 — ${new Date().toLocaleTimeString('ja-JP')}</div>
+        </div>
+        <div class="analysis-body">${txt.replace(/\n/g,'<br>').replace(/【(.+?)】/g,'<b style="color:var(--accent)">【$1】</b>')}</div>
+      </div>`;
+  } catch(e) {
+    out.innerHTML = `<div class="ai-box"><div class="ai-text" style="color:var(--red)">APIエラー: ${e.message}<br><br>APIキーを設定してください（RSS設定タブ）</div></div>`;
+  }
+  btn.disabled = false;
+}
+
+async function generateDailySummary() {
+  const out = document.getElementById('dailySummaryOutput');
+  out.innerHTML = `<div class="ai-box"><div class="ai-box-title"><div class="ai-pulse"></div>総合分析を生成中...</div><div class="ai-loading"><span></span><span></span><span></span></div></div>`;
+
+  const prompt = `2025年3月28日のFXマーケットのファンダメンタル状況を分析してください。
+
+現在の主な状況：
+- USD: 政策金利4.25-4.50%、CPI2.8%で高止まり、FRBは利下げ慎重
+- EUR: 政策金利2.65%、ECB利下げサイクル継続中
+- GBP: 政策金利4.50%、インフレ3.0%で粘着
+- JPY: 政策金利0.50%、日銀追加利上げに慎重
+- 資源国: 中国景気懸念、鉄鉱石100ドル割れ
+- 地政学: トランプ関税4/2発動予定でリスクオフ
+
+各通貨の今日のバイアスと注目ポイントを150文字程度で各通貨まとめてください。最後に本日の総括も。`;
+
+  try {
+    const res = await fetch('/api/claude', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({
+        max_tokens: 1000,
+        messages: [{role:'user', content: prompt}]
+      })
+    });
+    const data = await res.json();
+    const txt = data.content?.[0]?.text || '';
+    out.innerHTML = `
+      <div class="analysis-result">
+        <div class="analysis-header">
+          <div class="ai-pulse"></div>
+          <div class="analysis-title">本日(3/28)の総合ファンダメンタル分析</div>
+        </div>
+        <div class="analysis-body">${txt.replace(/\n/g,'<br>').replace(/【(.+?)】/g,'<b style="color:var(--accent)">【$1】</b>').replace(/USD|EUR|GBP|JPY|AUD|CAD/g,m=>`<b style="color:var(--accent)">${m}</b>`)}</div>
+      </div>`;
+  } catch(e) {
+    out.innerHTML = `<div class="ai-box"><div class="ai-text" style="color:var(--red)">APIエラー。RSSTタブでAPIキーを設定してください。</div></div>`;
+  }
+}
+
+function saveSettings() {
+  const key = document.getElementById('apiKeyInput').value;
+  if (key) localStorage.setItem('fx_api_key', key);
+  alert('設定を保存しました');
+}
+
+// ─── RSS FETCH ───
+const RSS_SOURCES = [
+  { name: 'Reuters', url: 'https://feeds.reuters.com/reuters/businessNews', tags: ['USD','GLOBAL'] },
+  { name: 'Investing.com', url: 'https://www.investing.com/rss/news.rss', tags: ['GLOBAL'] },
+  { name: 'FX Street', url: 'https://www.fxstreet.com/rss/news', tags: ['USD','EUR','GBP'] },
+  { name: 'NHK経済', url: 'https://www3.nhk.or.jp/rss/news/cat6.xml', tags: ['JPY'] },
+];
+
+const CUR_KEYWORDS = {
+  USD: ['fed','fomc','dollar','usd','powell','cpi','nfp','payroll','inflation','米','ドル','連邦'],
+  EUR: ['ecb','euro','eur','lagarde','ユーロ','欧州','独'],
+  GBP: ['boe','pound','gbp','bailey','英','ポンド','sterling'],
+  JPY: ['boj','yen','jpy','ueda','日銀','円','日本'],
+  COMM: ['rba','aud','cad','iron','oil','wti','brent','australia','canada','資源','鉄鉱石','原油'],
+};
+
+function detectCurrency(title) {
+  const t = (title || '').toLowerCase();
+  for (const [cur, kws] of Object.entries(CUR_KEYWORDS)) {
+    if (kws.some(k => t.includes(k.toLowerCase()))) return cur;
+  }
+  return 'GLOBAL';
+}
+
+function tagClass(cur) {
+  const map = {USD:'tag-usd',EUR:'tag-eur',GBP:'tag-gbp',JPY:'tag-jpy',COMM:'tag-comm',GLOBAL:'tag-global'};
+  return map[cur] || 'tag-global';
+}
+
+async function fetchRSS() {
+  const feed = document.getElementById('rssFeed');
+  const allItems = [];
+
+  for (const src of RSS_SOURCES) {
+    try {
+      const resp = await fetch(`/api/rss?url=${encodeURIComponent(src.url)}`);
+      if (!resp.ok) continue;
+      const data = await resp.json();
+      (data.items || []).forEach(item => {
+        allItems.push({ ...item, source: src.name });
+      });
+    } catch { /* サーバーレス関数未対応環境では無視 */ }
+  }
+
+  if (allItems.length === 0) return; // サンプルデータそのまま表示
+
+  // 日付降順ソート
+  allItems.sort((a, b) => new Date(b.pubDate) - new Date(a.pubDate));
+
+  const html = allItems.slice(0, 30).map(item => {
+    const cur = detectCurrency(item.title);
+    const dt = item.pubDate ? new Date(item.pubDate).toLocaleString('ja-JP', {month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'}) : '';
+    return `
+      <div class="news-item">
+        <div class="news-item-header">
+          <span class="news-tag ${tagClass(cur)}">${cur}</span>
+          <span class="news-tag" style="background:rgba(255,255,255,0.05);color:var(--text3);font-size:8px">${item.source}</span>
+          <span class="news-time">${dt}</span>
+        </div>
+        <div class="news-title">${item.title}</div>
+        <div style="display:flex;gap:8px;margin-top:6px">
+          <button onclick="loadToAnalysis(this)" data-text="${(item.title+' '+item.description).replace(/"/g,"'")}" style="background:none;border:1px solid var(--border2);border-radius:4px;padding:2px 8px;font-size:10px;color:var(--text3);cursor:pointer">→ AI分析へ</button>
+          ${item.link ? `<a href="${item.link}" target="_blank" style="font-size:10px;color:var(--text3);display:flex;align-items:center">記事を開く ↗</a>` : ''}
+        </div>
+      </div>`;
+  }).join('');
+
+  if (html) feed.innerHTML = html;
+}
+
+// ページロード時にRSS取得
+window.addEventListener('load', () => {
+  fetchRSS();
+  setInterval(fetchRSS, 10 * 60 * 1000); // 10分ごと自動更新
+});
+
+
+// ─── TICKER SIMULATION ───
+function jitter(base, pct=0.001) {
+  return (base * (1 + (Math.random()-0.5)*2*pct)).toFixed(4);
+}
+function updateTickers() {
+  const pairs = {
+    'usdjpy': [151.42, 2], 'eurjpy': [163.85, 2], 'gbpjpy': [191.74, 2],
+    'eurusd': [1.0819, 4], 'gbpusd': [1.2657, 4], 'audusd': [0.6524, 4], 'usdcad': [1.3568, 4]
+  };
+  Object.entries(pairs).forEach(([k,[base,dec]]) => {
+    const newVal = (base * (1+(Math.random()-0.5)*0.0004)).toFixed(dec);
+    const el = document.getElementById('t-'+k);
+    const chg = ((newVal-base)/base*100).toFixed(2);
+    if (el) el.textContent = newVal;
+    const chgEl = document.getElementById('tc-'+k);
+    if (chgEl) {
+      chgEl.textContent = (chg>=0?'+':'')+chg+'%';
+      chgEl.className = 'ticker-chg ' + (chg>=0?'up':'dn');
+    }
+  });
+}
+setInterval(updateTickers, 3000);
+</script>
+</body>
+</html>
