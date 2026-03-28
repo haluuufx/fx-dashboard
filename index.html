@@ -697,13 +697,14 @@
 <!-- ═══════════════════════ DASHBOARD ═══════════════════════ -->
 <div class="section active" id="section-dashboard">
   <div class="ticker-bar" id="tickerBar">
-    <div class="ticker-item"><span class="ticker-pair">USD/JPY</span><span class="ticker-val" id="t-usdjpy">151.42</span><span class="ticker-chg up" id="tc-usdjpy">+0.23%</span></div>
-    <div class="ticker-item"><span class="ticker-pair">EUR/JPY</span><span class="ticker-val" id="t-eurjpy">163.85</span><span class="ticker-chg up" id="tc-eurjpy">+0.11%</span></div>
-    <div class="ticker-item"><span class="ticker-pair">GBP/JPY</span><span class="ticker-val" id="t-gbpjpy">191.74</span><span class="ticker-chg dn" id="tc-gbpjpy">-0.08%</span></div>
-    <div class="ticker-item"><span class="ticker-pair">EUR/USD</span><span class="ticker-val" id="t-eurusd">1.0819</span><span class="ticker-chg dn" id="tc-eurusd">-0.12%</span></div>
-    <div class="ticker-item"><span class="ticker-pair">GBP/USD</span><span class="ticker-val" id="t-gbpusd">1.2657</span><span class="ticker-chg up" id="tc-gbpusd">+0.15%</span></div>
-    <div class="ticker-item"><span class="ticker-pair">AUD/USD</span><span class="ticker-val" id="t-audusd">0.6524</span><span class="ticker-chg dn" id="tc-audusd">-0.31%</span></div>
-    <div class="ticker-item"><span class="ticker-pair">USD/CAD</span><span class="ticker-val" id="t-usdcad">1.3568</span><span class="ticker-chg up" id="tc-usdcad">+0.18%</span></div>
+    <div class="ticker-item"><span class="ticker-pair">USD/JPY</span><span class="ticker-val" id="t-usdjpy">—</span><span class="ticker-chg" id="tc-usdjpy">—</span></div>
+    <div class="ticker-item"><span class="ticker-pair">EUR/JPY</span><span class="ticker-val" id="t-eurjpy">—</span><span class="ticker-chg" id="tc-eurjpy">—</span></div>
+    <div class="ticker-item"><span class="ticker-pair">GBP/JPY</span><span class="ticker-val" id="t-gbpjpy">—</span><span class="ticker-chg" id="tc-gbpjpy">—</span></div>
+    <div class="ticker-item"><span class="ticker-pair">EUR/USD</span><span class="ticker-val" id="t-eurusd">—</span><span class="ticker-chg" id="tc-eurusd">—</span></div>
+    <div class="ticker-item"><span class="ticker-pair">GBP/USD</span><span class="ticker-val" id="t-gbpusd">—</span><span class="ticker-chg" id="tc-gbpusd">—</span></div>
+    <div class="ticker-item"><span class="ticker-pair">AUD/USD</span><span class="ticker-val" id="t-audusd">—</span><span class="ticker-chg" id="tc-audusd">—</span></div>
+    <div class="ticker-item"><span class="ticker-pair">USD/CAD</span><span class="ticker-val" id="t-usdcad">—</span><span class="ticker-chg" id="tc-usdcad">—</span></div>
+    <span id="ratesDate" style="margin-left:auto;font-size:9px;color:var(--text3)"></span>
   </div>
 
   <div class="section-title">通貨別ファンダメンタルスコア</div>
@@ -1870,17 +1871,84 @@ window.addEventListener('load', () => {
   setInterval(fetchRSS, 10 * 60 * 1000); // 10分ごと自動更新
 });
 
+// ─── REAL RATES (frankfurter) ───
+// 前回取得レートを保持して変化率を計算
+let prevRates = {};
 
-// ─── TICKER SIMULATION ───
-function jitter(base, pct=0.001) {
-  return (base * (1 + (Math.random()-0.5)*2*pct)).toFixed(4);
+async function fetchRealRates() {
+  try {
+    const r = await fetch('/api/rates');
+    if (!r.ok) throw new Error('rates api error');
+    const data = await r.json();
+    const rates = data.rates; // { USD: 151.xx, EUR: 163.xx, ... }
+
+    // ticker要素を更新
+    // rates[X] = 1X = 何円
+    const pairs = [
+      { id: 'usdjpy', base: 'USD', dec: 2 },
+      { id: 'eurjpy', base: 'EUR', dec: 2 },
+      { id: 'gbpjpy', base: 'GBP', dec: 2 },
+      { id: 'audusd', base: 'AUD', isUsd: true, dec: 4 },
+      { id: 'usdcad', base: 'CAD', isUsdCad: true, dec: 4 },
+    ];
+
+    if (rates.EUR && rates.USD) {
+      // EUR/USD = EUR円 / USD円
+      const eurusd = (rates.EUR / rates.USD).toFixed(4);
+      setTicker('eurusd', eurusd, prevRates.eurusd, 4);
+      prevRates.eurusd = eurusd;
+    }
+    if (rates.GBP && rates.USD) {
+      const gbpusd = (rates.GBP / rates.USD).toFixed(4);
+      setTicker('gbpusd', gbpusd, prevRates.gbpusd, 4);
+      prevRates.gbpusd = gbpusd;
+    }
+    pairs.forEach(({ id, base, dec, isUsdCad }) => {
+      if (!rates[base]) return;
+      let val;
+      if (isUsdCad) {
+        // USD/CAD = USD円 / CAD円 = 1USD = 何CAD → 逆数
+        val = rates.USD ? (rates.USD / rates[base]).toFixed(dec) : null;
+      } else if (id === 'audusd') {
+        val = rates.USD ? (rates[base] / rates.USD).toFixed(dec) : null;
+      } else {
+        val = rates[base].toFixed(dec);
+      }
+      if (!val) return;
+      setTicker(id, val, prevRates[id], dec);
+      prevRates[id] = val;
+    });
+
+    // 更新日時をヘッダーに追記
+    const dateEl = document.getElementById('ratesDate');
+    if (dateEl) dateEl.textContent = `レート更新: ${data.date}`;
+  } catch(e) {
+    // 取得失敗時はシミュレーションにフォールバック
+    simulateTickers();
+  }
 }
-function updateTickers() {
-  const pairs = {
-    'usdjpy': [151.42, 2], 'eurjpy': [163.85, 2], 'gbpjpy': [191.74, 2],
-    'eurusd': [1.0819, 4], 'gbpusd': [1.2657, 4], 'audusd': [0.6524, 4], 'usdcad': [1.3568, 4]
-  };
-  Object.entries(pairs).forEach(([k,[base,dec]]) => {
+
+function setTicker(id, newVal, oldVal, dec) {
+  const el = document.getElementById('t-' + id);
+  const chgEl = document.getElementById('tc-' + id);
+  if (!el) return;
+  el.textContent = newVal;
+  if (oldVal) {
+    const chg = ((newVal - oldVal) / oldVal * 100).toFixed(2);
+    if (chgEl) {
+      chgEl.textContent = (chg >= 0 ? '+' : '') + chg + '%';
+      chgEl.className = 'ticker-chg ' + (chg >= 0 ? 'up' : 'dn');
+    }
+  }
+}
+
+// フォールバック用シミュレーション
+const _simBase = {
+  'usdjpy': [151.42, 2], 'eurjpy': [163.85, 2], 'gbpjpy': [191.74, 2],
+  'eurusd': [1.0819, 4], 'gbpusd': [1.2657, 4], 'audusd': [0.6524, 4], 'usdcad': [1.3568, 4]
+};
+function simulateTickers() {
+  Object.entries(_simBase).forEach(([k,[base,dec]]) => {
     const newVal = (base * (1+(Math.random()-0.5)*0.0004)).toFixed(dec);
     const el = document.getElementById('t-'+k);
     const chg = ((newVal-base)/base*100).toFixed(2);
@@ -1888,11 +1956,105 @@ function updateTickers() {
     const chgEl = document.getElementById('tc-'+k);
     if (chgEl) {
       chgEl.textContent = (chg>=0?'+':'')+chg+'%';
-      chgEl.className = 'ticker-chg ' + (chg>=0?'up':'dn');
+      chgEl.className = 'ticker-chg '+(chg>=0?'up':'dn');
     }
   });
 }
-setInterval(updateTickers, 3000);
+
+// ─── TRANSLATE (Google非公式エンドポイント・キー不要) ───
+async function translateTitle(text, targetLang = 'ja') {
+  if (!text || text.trim() === '') return text;
+  // すでに日本語っぽければスキップ（ひらがな・カタカナ・漢字が含まれる）
+  if (/[\u3040-\u30FF\u4E00-\u9FFF]/.test(text)) return text;
+  try {
+    const url = 'https://translate.googleapis.com/translate_a/single'
+      + '?client=gtx&sl=auto&tl=' + targetLang
+      + '&dt=t&q=' + encodeURIComponent(text);
+    const r = await fetch(url);
+    const data = await r.json();
+    // レスポンス形式: [[["翻訳文","原文",...],...],...]
+    const translated = (data[0] || []).map(s => s[0] || '').join('');
+    return translated || text;
+  } catch {
+    return text; // 失敗時は原文のまま
+  }
+}
+
+// タイトル一括翻訳（並列実行）
+async function translateItems(items) {
+  const translated = await Promise.all(
+    items.map(async item => ({
+      ...item,
+      titleJa: await translateTitle(item.title),
+    }))
+  );
+  return translated;
+}
+
+// ─── NEWS API FETCH ───
+// サーバー側で6時間キャッシュ済みのため、フロントから何度呼んでもAPIは叩かれない
+async function fetchNewsApi() {
+  const feed = document.getElementById('rssFeed');
+  try {
+    const r = await fetch('/api/news');
+    if (!r.ok) throw new Error('news api error');
+    const data = await r.json();
+    const items = data.items || [];
+    if (items.length === 0) { fetchRSS(); return; }
+
+    // ローディング表示
+    feed.innerHTML = '<div style="padding:20px;text-align:center;color:var(--text3);font-size:12px">ニュースを翻訳中...</div>';
+
+    // タイトルを日本語に翻訳
+    const translated = await translateItems(items);
+
+    // 取得時刻表示
+    const fetchedAt = data.fetchedAt
+      ? new Date(data.fetchedAt).toLocaleString('ja-JP', {month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'})
+      : '';
+
+    const html = translated.map(item => {
+      const cur = detectCurrency(item.title);
+      const dt = item.pubDate
+        ? new Date(item.pubDate).toLocaleString('ja-JP', {month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'})
+        : '';
+      const isJa = /[\u3040-\u30FF\u4E00-\u9FFF]/.test(item.title);
+      return `
+        <div class="news-item">
+          <div class="news-item-header">
+            <span class="news-tag ${tagClass(cur)}">${cur}</span>
+            <span class="news-tag" style="background:rgba(255,255,255,0.05);color:var(--text3);font-size:8px">${item.source}</span>
+            <span class="news-time">${dt}</span>
+          </div>
+          <div class="news-title">${item.titleJa || item.title}</div>
+          ${(!isJa && item.titleJa && item.titleJa !== item.title)
+            ? `<div style="font-size:10px;color:var(--text3);margin-top:2px;font-style:italic">${item.title}</div>`
+            : ''}
+          <div style="display:flex;gap:8px;margin-top:6px">
+            <button onclick="loadToAnalysis(this)" data-text="${(item.title+' '+item.description).replace(/"/g,"'")}"
+              style="background:none;border:1px solid var(--border2);border-radius:4px;padding:2px 8px;font-size:10px;color:var(--text3);cursor:pointer">→ AI分析へ</button>
+            ${item.link ? `<a href="${item.link}" target="_blank" style="font-size:10px;color:var(--text3);display:flex;align-items:center">記事を開く ↗</a>` : ''}
+          </div>
+        </div>`;
+    }).join('');
+
+    feed.innerHTML = html
+      + `<div style="padding:8px 0;font-size:9px;color:var(--text3);text-align:right">取得: ${fetchedAt}（6時間キャッシュ）</div>`;
+  } catch {
+    fetchRSS(); // フォールバック
+  }
+}
+
+// ─── INIT ───
+window.addEventListener('load', () => {
+  // 為替レート: 初回即取得 → 1時間ごと
+  fetchRealRates();
+  setInterval(fetchRealRates, 60 * 60 * 1000);
+
+  // ニュース: 初回取得のみ（サーバー側6時間キャッシュ済みのでフロントから頻繁に叩いても安全）
+  fetchNewsApi();
+  setInterval(fetchNewsApi, 6 * 60 * 60 * 1000); // 6時間ごとに再取得
+});
 </script>
 </body>
 </html>
