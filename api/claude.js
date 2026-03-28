@@ -1,5 +1,4 @@
-export default async function handler(req, res) {
-  // CORS preflight
+module.exports = async function handler(req, res) {
   if (req.method === 'OPTIONS') {
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
@@ -13,13 +12,12 @@ export default async function handler(req, res) {
 
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) {
-    return res.status(500).json({ error: 'API key not configured on server' });
+    return res.status(500).json({ error: 'API key not configured' });
   }
 
   try {
     const { messages, max_tokens = 1000 } = req.body;
-
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
+    const r = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -32,13 +30,11 @@ export default async function handler(req, res) {
         messages
       })
     });
-
-    const data = await response.json();
-
+    const data = await r.json();
     res.setHeader('Access-Control-Allow-Origin', '*');
-    return res.status(response.status).json(data);
+    return res.status(r.status).json(data);
   } catch (err) {
     res.setHeader('Access-Control-Allow-Origin', '*');
     return res.status(500).json({ error: err.message });
   }
-}
+};
