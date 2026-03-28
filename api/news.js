@@ -1,10 +1,4 @@
-// ─── 無料枠超過防止設計 ───────────────────────────────────────
-// NewsData.io : 上限200件/日 → 1回10件×Vercel6時間キャッシュ = 最大40件/日
-// GNews       : 上限100件/日 → 1回10件×Vercel6時間キャッシュ = 最大40件/日
-// Vercel CDNキャッシュ(s-maxage)により、実際にAPIを叩くのは6時間に1回だけ
-// ─────────────────────────────────────────────────────────────
-
-const CACHE_SECONDS = 6 * 60 * 60; // 6時間
+const CACHE_SECONDS = 6 * 60 * 60;
 const NEWSDATA_MAX  = 10;
 const GNEWS_MAX     = 10;
 
@@ -44,11 +38,9 @@ async function fetchGNews(apiKey) {
   }));
 }
 
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   if (req.method === 'OPTIONS') return res.status(200).end();
-
-  // Vercel CDNに6時間キャッシュさせる → APIは6時間に1回しか叩かれない
   res.setHeader('Cache-Control', 's-maxage=' + CACHE_SECONDS + ', stale-while-revalidate=300');
 
   const newsdataKey = process.env.NEWSDATA_API_KEY;
@@ -77,4 +69,4 @@ export default async function handler(req, res) {
     fetchedAt: new Date().toISOString(),
     errors:    errors.length ? errors : undefined
   });
-}
+};
