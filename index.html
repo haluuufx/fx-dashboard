@@ -645,6 +645,10 @@
   .sb-code.jpy { color: var(--jpy); }
   .sb-code.comm { color: var(--comm); }
   .sb-bias { font-size: 10px; }
+  .sb-sub {
+    font-size: 9px; color: var(--text3);
+    margin-top: 4px; line-height: 1.3;
+  }
 
   /* ── MOBILE ── */
   @media (max-width: 900px) {
@@ -890,22 +894,27 @@
     <div class="summary-badge usd" onclick="showSection('fundamental'); setFundTab('usd')">
       <div class="sb-code usd">USD</div>
       <div class="sb-bias"><span class="bias-badge bias-neut">NEUTRAL</span></div>
+      <div class="sb-sub">↓ 弱め寄り<br>雇用悪化・利下げ圧力</div>
     </div>
     <div class="summary-badge eur" onclick="showSection('fundamental'); setFundTab('eur')">
       <div class="sb-code eur">EUR</div>
       <div class="sb-bias"><span class="bias-badge bias-bear">BEARISH</span></div>
+      <div class="sb-sub">エネルギー依存が重石<br>イラン直撃リスク</div>
     </div>
     <div class="summary-badge gbp" onclick="showSection('fundamental'); setFundTab('gbp')">
       <div class="sb-code gbp">GBP</div>
       <div class="sb-bias"><span class="bias-badge bias-neut">NEUTRAL</span></div>
+      <div class="sb-sub">↑ 強め寄り<br>BOE慎重・ECBより高金利</div>
     </div>
     <div class="summary-badge jpy" onclick="showSection('fundamental'); setFundTab('jpy')">
       <div class="sb-code jpy">JPY</div>
-      <div class="sb-bias"><span class="bias-badge bias-bull">BULLISH</span></div>
+      <div class="sb-bias"><span class="bias-badge bias-neut">NEUTRAL</span></div>
+      <div class="sb-sub">今は160台の円安継続<br>リスクオフ時のみ円高</div>
     </div>
     <div class="summary-badge comm" onclick="showSection('fundamental'); setFundTab('comm')">
       <div class="sb-code comm">資源国</div>
-      <div class="sb-bias"><span class="bias-badge bias-bull">BULLISH</span></div>
+      <div class="sb-bias"><span class="bias-badge bias-neut">NEUTRAL</span></div>
+      <div class="sb-sub">CAD↑原油高恩恵<br>AUD↓リスクオフ売り</div>
     </div>
   </div>
 
@@ -966,7 +975,7 @@
           <div class="currency-header">
             <div class="currency-flag">🇯🇵</div>
             <div><div class="currency-name jpy">JPY</div><div class="currency-fullname">日本円</div></div>
-            <span class="bias-badge bias-bull">BULL</span>
+            <span class="bias-badge bias-neut">NEUT</span>
           </div>
           <div class="meter-row"><span class="meter-label">政策金利</span><div class="meter-bar"><div class="meter-fill" style="width:15%;background:linear-gradient(90deg,#ffb74d,#ffd54f)"></div></div><span class="meter-val">0.75%</span></div>
           <div class="meter-row"><span class="meter-label">日10年債</span><div class="meter-bar"><div class="meter-fill" style="width:40%;background:linear-gradient(90deg,#ffb74d,#ffd54f)"></div></div><span class="meter-val">2.02%</span></div>
@@ -983,7 +992,7 @@
         <div class="currency-header">
           <div class="currency-flag">🌏</div>
           <div><div class="currency-name comm">資源国通貨</div><div class="currency-fullname">AUD / CAD / NZD / NOK</div></div>
-          <span class="bias-badge bias-bull">BULL</span>
+          <span class="bias-badge bias-neut">NEUT</span>
         </div>
         <div class="grid-2" style="margin-bottom:0">
           <div>
@@ -1392,11 +1401,12 @@
         <div class="card">
           <div class="card-title"><span class="dot"></span>現状分析サマリー</div>
           <div style="font-size:12px;color:var(--text2);line-height:1.8">
-            <div style="margin-bottom:10px">🟢 <b>強材料：</b>日銀利上げ継続期待、リスクオフ(イラン戦争)で安全通貨買い、日米金利差縮小</div>
-            <div style="margin-bottom:10px">🔴 <b>弱材料：</b>依然として低金利、原油高でコスト増</div>
+            <div style="margin-bottom:10px">🟡 <b>現状：</b>USD/JPYは160台の円安継続。キャリートレード解消なし</div>
+            <div style="margin-bottom:10px">🟢 <b>円高材料：</b>リスクオフ時の安全通貨、日銀利上げ期待、金利差縮小トレンド</div>
+            <div style="margin-bottom:10px">🔴 <b>円安材料：</b>依然大きい日米金利差、キャリートレード継続</div>
             <div style="padding:10px;background:rgba(255,183,77,0.05);border-radius:6px;border:1px solid rgba(255,183,77,0.2)">
-              <b style="color:var(--jpy)">大局バイアス：強気(BULLISH)</b><br>
-              イラン戦争リスクオフ＋日銀利上げ期待で円買い優勢。USD/JPYは147〜152のレンジ。キャリー巻き戻しに注意。
+              <b style="color:var(--jpy)">大局バイアス：中立(NEUTRAL)</b><br>
+              今は円安が続いており160台。ただし日銀利上げや突発リスクオフで急激に円高転換するリスクあり。中長期は緩やかな円高方向（各社予測140〜155台）。
             </div>
           </div>
         </div>
@@ -1463,11 +1473,11 @@
         <div class="card">
           <div class="card-title"><span class="dot"></span>現状分析サマリー(資源国通貨)</div>
           <div style="font-size:12px;color:var(--text2);line-height:1.8">
-            <div style="margin-bottom:10px">🟢 <b>強材料：</b>原油急騰(WTI~$90)でCAD・NOK強、エネルギー輸出国が恩恵</div>
-            <div style="margin-bottom:10px">🔴 <b>弱材料：</b>リスクオフでAUD・NZD売り、中国景気不透明</div>
+            <div style="margin-bottom:10px">🟢 <b>CAD/NOK強材料：</b>原油急騰($90↑)でエネルギー輸出国が恩恵</div>
+            <div style="margin-bottom:10px">🔴 <b>AUD弱材料：</b>リスクオフ売り、FRB利下げ期待後退でAUD/USD下落</div>
             <div style="padding:10px;background:rgba(165,214,167,0.05);border-radius:6px;border:1px solid rgba(165,214,167,0.2)">
-              <b style="color:var(--comm)">大局バイアス：強気(BULLISH)※CAD・NOK限定</b><br>
-              イラン戦争による原油高がCAD・NOKを押し上げ。AUDはリスクオフで上値重く、通貨間で分化。
+              <b style="color:var(--comm)">大局バイアス：中立(NEUTRAL)※通貨間で分化</b><br>
+              CAD・NOKは原油高で強め。AUDはリスクオフで弱め。一括りにできない状況。原油の動向とリスクオン/オフで方向感が変わる。
             </div>
           </div>
         </div>
