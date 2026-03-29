@@ -13,8 +13,16 @@ async function fetchPrices() {
   const r = await fetch(url, { headers: { 'Accept': 'application/json' } });
   if (!r.ok) throw new Error('CoinGecko HTTP ' + r.status);
   const data = await r.json();
-  if (!Array.isArray(data)) throw new Error('CoinGecko: unexpected response');
-  return data;
+  if (!Array.isArray(data)) throw new Error('CoinGecko unexpected response format');
+  // nullになりうるフィールドを安全な値に正規化
+  return data.map(coin => ({
+    ...coin,
+    current_price: coin.current_price ?? 0,
+    market_cap:    coin.market_cap    ?? 0,
+    price_change_percentage_1h_in_currency:  coin.price_change_percentage_1h_in_currency  ?? 0,
+    price_change_percentage_24h_in_currency: coin.price_change_percentage_24h_in_currency ?? 0,
+    price_change_percentage_7d_in_currency:  coin.price_change_percentage_7d_in_currency  ?? 0,
+  }));
 }
 
 async function fetchFearGreed() {
@@ -36,7 +44,8 @@ async function fetchFundingRates() {
     Object.entries(SYMBOLS).forEach(([id, sym]) => {
       const found = data.find(d => d.symbol === sym);
       if (found && found.lastFundingRate != null) {
-        rates[id] = parseFloat(found.lastFundingRate) * 100;
+        const val = parseFloat(found.lastFundingRate) * 100;
+        rates[id] = isNaN(val) ? 0 : val;
       }
     });
   } catch { /* ignore */ }
@@ -48,12 +57,12 @@ async function fetchDominance() {
     const r = await fetch('https://api.coingecko.com/api/v3/global');
     if (!r.ok) return null;
     const d = await r.json();
-    const pct = d && d.data && d.data.market_cap_percentage;
+    const pct   = d && d.data && d.data.market_cap_percentage;
     const total = d && d.data && d.data.total_market_cap && d.data.total_market_cap.usd;
     return {
-      btc: (pct && pct.btc != null) ? Number(pct.btc).toFixed(1) : null,
-      eth: (pct && pct.eth != null) ? Number(pct.eth).toFixed(1) : null,
-      total: total || null
+      btc:   (pct && pct.btc   != null) ? Number(pct.btc).toFixed(1)   : null,
+      eth:   (pct && pct.eth   != null) ? Number(pct.eth).toFixed(1)   : null,
+      total: (total != null)            ? total                         : null,
     };
   } catch { return null; }
 }
@@ -63,19 +72,23 @@ module.exports = async function handler(req, res) {
   if (req.method === 'OPTIONS') return res.status(200).end();
   res.setHeader('Cache-Control', 's-maxage=300, stale-while-revalidate=60');
 
-  const [prices, fearGreed, funding, dominance] = await Promise.all([
-    fetchPrices().catch(e => ({ error: e.message })),
+  const [pricesResult, fearGreed, funding, dominance] = await Promise.all([
+    fetchPrices().catch(e => ({ _error: e.message })),
     fetchFearGreed().catch(() => null),
     fetchFundingRates().catch(() => ({})),
     fetchDominance().catch(() => null),
   ]);
 
+  const prices     = Array.isArray(pricesResult) ? pricesResult : [];
+  const priceError = (!Array.isArray(pricesResult) && pricesResult && pricesResult._error)
+    ? pricesResult._error : undefined;
+
   return res.status(200).json({
-    prices: Array.isArray(prices) ? prices : [],
+    prices,
     fearGreed,
     funding,
     dominance,
     fetchedAt: new Date().toISOString(),
-    priceError: (!Array.isArray(prices) && prices && prices.error) ? prices.error : undefined
+    priceError,
   });
 };
