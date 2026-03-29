@@ -2145,7 +2145,7 @@
 
 <!-- ── CRYPTO NEWS ── -->
 <div class="section" id="section-crypto-news">
-  <div class="section-title">仮想通貨ニュース分析 — AI powered by Claude</div>
+  <div class="section-title">仮想通貨ニュース分析 — <span id="cryptoAiModelBadge" style="color:var(--accent)">AI</span></div>
   <div class="grid-65">
     <div>
       <div class="card" style="margin-bottom:16px">
@@ -2161,6 +2161,12 @@
           <button class="btn-secondary" onclick="document.getElementById('cryptoNewsInput').value=''">クリア</button>
         </div>
         <div id="cryptoAnalysisOutput"></div>
+      </div>
+      <div class="card">
+        <div class="card-title"><span class="dot"></span>最新クリプトニュース</div>
+        <div class="news-feed" id="cryptoNewsFeed">
+          <div style="padding:16px;text-align:center;color:var(--text3);font-size:12px">読み込み中...</div>
+        </div>
       </div>
     </div>
     <div>
@@ -2973,7 +2979,11 @@ function switchMode(mode) {
     cryptoNav.style.display = 'flex';
     logo.innerHTML = '₿<span>/</span>CRYPTO';
     // 初回のみデータ取得
-    if (!window._cryptoLoaded) { fetchCryptoData(); window._cryptoLoaded = true; }
+    if (!window._cryptoLoaded) {
+      fetchCryptoData();
+      fetchCryptoNews();
+      window._cryptoLoaded = true;
+    }
     // クリプトナビの最初のボタンをアクティブに
     document.querySelectorAll('#cryptoNav .nav-btn').forEach((b,i) => b.classList.toggle('active', i===0));
     showCryptoSection('crypto-dashboard');
@@ -3039,8 +3049,12 @@ async function fetchCryptoData() {
 
     // ── マーケットバー ──
     if (data.dominance) {
-      document.getElementById('c-btcdom').textContent = data.dominance.btc + '%';
-      document.getElementById('c-totalcap').textContent = fmtCap(data.dominance.total);
+      const btcDom = data.dominance.btc;
+      const totalCap = data.dominance.total;
+      const domEl = document.getElementById('c-btcdom');
+      const capEl = document.getElementById('c-totalcap');
+      if (domEl) domEl.textContent = btcDom != null ? btcDom + '%' : '—';
+      if (capEl) capEl.textContent = totalCap != null ? fmtCap(totalCap) : '—';
     }
 
     // ── コインカード ──
@@ -3069,7 +3083,7 @@ async function fetchCryptoData() {
       }
       if (data.dominance) {
         const bdf = document.getElementById('btc-dom-fund');
-        if (bdf) bdf.textContent = data.dominance.btc + '%';
+        if (bdf) bdf.textContent = data.dominance.btc != null ? data.dominance.btc + '%' : '—';
       }
 
       // 9銘柄カード
@@ -3146,6 +3160,12 @@ async function fetchCryptoData() {
       upEl.textContent = '更新: ' + new Date(data.fetchedAt).toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit'});
     }
 
+    // エラー表示
+    if (data.priceError) {
+      document.getElementById('coinCards').innerHTML =
+        `<div style="padding:20px;color:var(--yellow);font-size:12px">⚠ 価格取得エラー: ${data.priceError}<br>しばらく待ってから再読み込みしてください。</div>`;
+    }
+
     // 5分後に再取得
     setTimeout(fetchCryptoData, 5 * 60 * 1000);
 
@@ -3155,7 +3175,72 @@ async function fetchCryptoData() {
   }
 }
 
-// ─── CRYPTO NEWS ANALYSIS ───
+// ─── CRYPTO NEWS FETCH ───
+const CRYPTO_KEYWORDS = {
+  BTC:  ['bitcoin','btc','blackrock','etf','ibit','halving','半減期'],
+  ETH:  ['ethereum','eth','vitalik','staking','layer2'],
+  SOL:  ['solana','sol'],
+  DEFI: ['defi','aave','uniswap','chainlink','link','uni','liquidity','tvl'],
+  L2:   ['arbitrum','optimism','arb','layer2','l2','rollup'],
+};
+function detectCryptoCurrency(title) {
+  const t = (title || '').toLowerCase();
+  for (const [cur, kws] of Object.entries(CRYPTO_KEYWORDS)) {
+    if (kws.some(k => t.includes(k))) return cur;
+  }
+  return 'CRYPTO';
+}
+const CRYPTO_TAG_CLASS = { BTC:'tag-usd', ETH:'tag-eur', SOL:'tag-gbp', DEFI:'tag-comm', L2:'tag-jpy', CRYPTO:'tag-global' };
+
+async function fetchCryptoNews() {
+  const feed = document.getElementById('cryptoNewsFeed');
+  if (!feed) return;
+  feed.innerHTML = '<div style="padding:16px;text-align:center;color:var(--text3);font-size:12px">ニュースを取得中...</div>';
+  try {
+    const r = await fetch('/api/crypto-news');
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const data = await r.json();
+    const items = data.items || [];
+    if (items.length === 0) { feed.innerHTML = '<div style="padding:16px;color:var(--text3);font-size:12px">ニュースが取得できませんでした</div>'; return; }
+
+    feed.innerHTML = '<div style="padding:20px;text-align:center;color:var(--text3);font-size:12px">翻訳中...</div>';
+    const translated = await translateItems(items);
+    const fetchedAt = data.fetchedAt
+      ? new Date(data.fetchedAt).toLocaleString('ja-JP',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'})
+      : '';
+
+    feed.innerHTML = translated.map(item => {
+      const cur = detectCryptoCurrency(item.title);
+      const tc  = CRYPTO_TAG_CLASS[cur] || 'tag-global';
+      const dt  = item.pubDate ? new Date(item.pubDate).toLocaleString('ja-JP',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'}) : '';
+      const isJa = /[\u3040-\u30FF\u4E00-\u9FFF]/.test(item.title);
+      return `
+        <div class="news-item">
+          <div class="news-item-header">
+            <span class="news-tag ${tc}">${cur}</span>
+            <span class="news-tag" style="background:rgba(255,255,255,0.05);color:var(--text3);font-size:8px">${item.source}</span>
+            <span class="news-time">${dt}</span>
+          </div>
+          <div class="news-title">${item.titleJa || item.title}</div>
+          ${(!isJa && item.titleJa && item.titleJa !== item.title)
+            ? `<div style="font-size:10px;color:var(--text3);margin-top:2px;font-style:italic">${item.title}</div>` : ''}
+          <div style="display:flex;gap:8px;margin-top:6px">
+            <button onclick="loadCryptoToAnalysis(this)" data-text="${(item.title+' '+item.description).replace(/"/g,"'")}"
+              style="background:none;border:1px solid var(--border2);border-radius:4px;padding:2px 8px;font-size:10px;color:var(--text3);cursor:pointer">→ AI分析へ</button>
+            ${item.link ? `<a href="${item.link}" target="_blank" style="font-size:10px;color:var(--text3);display:flex;align-items:center">記事を開く ↗</a>` : ''}
+          </div>
+        </div>`;
+    }).join('')
+      + `<div style="padding:8px 0;font-size:9px;color:var(--text3);text-align:right">取得: ${fetchedAt}（6時間キャッシュ）</div>`;
+  } catch(e) {
+    feed.innerHTML = `<div style="padding:16px;color:var(--red);font-size:12px">ニュース取得エラー: ${e.message}</div>`;
+  }
+}
+
+function loadCryptoToAnalysis(btn) {
+  const inp = document.getElementById('cryptoNewsInput');
+  if (inp) inp.value = btn.dataset.text;
+}
 async function analyzeCryptoNews() {
   const text = document.getElementById('cryptoNewsInput').value.trim();
   if (!text) { alert('ニュースを入力してください'); return; }
