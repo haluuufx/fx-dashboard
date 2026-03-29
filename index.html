@@ -676,18 +676,182 @@
   }
 
   .gap-top { margin-top: 20px; }
+
+  /* ── MODE SWITCH ── */
+  .mode-switch {
+    display: flex; gap: 4px;
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 3px;
+  }
+  .mode-btn {
+    padding: 5px 14px; border: none; border-radius: 6px;
+    font-size: 11px; font-weight: 700;
+    font-family: 'Noto Sans JP', sans-serif;
+    cursor: pointer; transition: all .2s;
+    background: none; color: var(--text3);
+  }
+  .mode-btn.active {
+    background: var(--surface2);
+    color: var(--text);
+  }
+  #modeCrypto.active { color: #f7931a; }
+
+  /* ── CRYPTO SPECIFIC ── */
+  :root {
+    --btc: #f7931a;
+    --eth: #627eea;
+    --sol: #9945ff;
+    --defi: #00d4aa;
+    --l2: #ff6b6b;
+  }
+  .crypto-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px;
+    transition: border-color .2s;
+  }
+  .crypto-card:hover { border-color: var(--border2); }
+  .coin-header {
+    display: flex; align-items: center; gap: 10px;
+    margin-bottom: 10px;
+  }
+  .coin-icon {
+    width: 32px; height: 32px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px; font-weight: 700; flex-shrink: 0;
+  }
+  .coin-name { font-size: 13px; font-weight: 700; color: var(--text); }
+  .coin-symbol { font-size: 10px; color: var(--text3); font-family: 'Space Mono', monospace; }
+  .coin-price {
+    font-family: 'Space Mono', monospace;
+    font-size: 18px; font-weight: 700;
+    color: var(--text); margin-bottom: 4px;
+  }
+  .coin-changes {
+    display: flex; gap: 8px; flex-wrap: wrap;
+    margin-bottom: 8px;
+  }
+  .coin-chg {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px; padding: 2px 6px;
+    border-radius: 4px;
+  }
+  .coin-chg.up { background: rgba(0,230,118,0.15); color: var(--green); }
+  .coin-chg.dn { background: rgba(255,68,68,0.15); color: var(--red); }
+  .coin-chg.neu { background: rgba(255,255,255,0.05); color: var(--text3); }
+  .coin-meta {
+    display: flex; justify-content: space-between;
+    font-size: 10px; color: var(--text3);
+    padding-top: 8px;
+    border-top: 1px solid var(--border);
+  }
+  .coin-meta span { font-family: 'Space Mono', monospace; color: var(--text2); }
+
+  /* Fear & Greed */
+  .fg-meter {
+    position: relative; width: 100%; height: 8px;
+    background: linear-gradient(90deg, #ff4444, #ff9800, #ffd600, #00e676);
+    border-radius: 4px; margin: 8px 0;
+  }
+  .fg-needle {
+    position: absolute; top: -4px;
+    width: 4px; height: 16px;
+    background: white; border-radius: 2px;
+    transform: translateX(-50%);
+    transition: left .8s ease;
+    box-shadow: 0 0 4px rgba(0,0,0,0.5);
+  }
+  .fg-value {
+    font-family: 'Space Mono', monospace;
+    font-size: 32px; font-weight: 700;
+    text-align: center;
+  }
+  .fg-label { font-size: 11px; text-align: center; color: var(--text3); }
+
+  /* Funding rate */
+  .funding-row {
+    display: flex; align-items: center; gap: 8px;
+    padding: 6px 0; border-bottom: 1px solid var(--border);
+    font-size: 11px;
+  }
+  .funding-row:last-child { border-bottom: none; }
+  .funding-sym {
+    font-family: 'Space Mono', monospace;
+    font-weight: 700; width: 50px; flex-shrink: 0;
+    color: var(--text2);
+  }
+  .funding-val {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px; margin-left: auto;
+  }
+  .funding-bar-outer {
+    flex: 1; height: 4px; background: var(--bg2);
+    border-radius: 2px; overflow: hidden;
+  }
+  .funding-bar-inner { height: 100%; border-radius: 2px; }
+
+  /* Crypto section grid */
+  .grid-crypto {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  .grid-crypto-9 {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  @media (max-width: 900px) {
+    .grid-crypto, .grid-crypto-9 { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (max-width: 600px) {
+    .grid-crypto, .grid-crypto-9 { grid-template-columns: 1fr; }
+  }
+
+  /* crypto fund tabs */
+  .crypto-fund-tabs {
+    display: flex; gap: 4px; flex-wrap: wrap;
+    margin-bottom: 16px;
+    border-bottom: 1px solid var(--border);
+  }
+  .crypto-fund-tab {
+    padding: 8px 14px; border: none; background: none;
+    font-size: 11px; font-weight: 700;
+    color: var(--text3); cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: all .2s; margin-bottom: -1px;
+    font-family: 'Space Mono', monospace;
+  }
+  .crypto-fund-tab:hover { color: var(--text2); }
+  .crypto-fund-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+  .crypto-fund-content { display: none; }
+  .crypto-fund-content.active { display: block; }
 </style>
 </head>
 <body>
 
 <header>
-  <div class="logo">FX<span>/</span>FUND</div>
-  <nav>
+  <div class="logo" id="headerLogo">FX<span>/</span>FUND</div>
+  <div class="mode-switch">
+    <button class="mode-btn active" id="modeFx" onclick="switchMode('fx')">📈 FX</button>
+    <button class="mode-btn" id="modeCrypto" onclick="switchMode('crypto')">₿ CRYPTO</button>
+  </div>
+  <nav id="fxNav">
     <button class="nav-btn active" onclick="showSection('dashboard')">ダッシュボード</button>
     <button class="nav-btn" onclick="showSection('calendar')">経済指標</button>
     <button class="nav-btn" onclick="showSection('fundamental')">ファンダ解説</button>
     <button class="nav-btn" onclick="showSection('news')">ニュース分析</button>
     <button class="nav-btn" onclick="showSection('rss')">RSS設定</button>
+  </nav>
+  <nav id="cryptoNav" style="display:none">
+    <button class="nav-btn active" onclick="showCryptoSection('crypto-dashboard')">ダッシュボード</button>
+    <button class="nav-btn" onclick="showCryptoSection('crypto-fundamental')">ファンダ解説</button>
+    <button class="nav-btn" onclick="showCryptoSection('crypto-news')">ニュース分析</button>
   </nav>
   <div class="header-time" id="headerTime"></div>
 </header>
@@ -1592,6 +1756,400 @@
 
 </main>
 
+<!-- ═══════════════ CRYPTO SECTIONS ═══════════════ -->
+<div id="crypto-main" style="display:none">
+<main>
+
+<!-- ── CRYPTO DASHBOARD ── -->
+<div class="section active" id="section-crypto-dashboard">
+
+  <!-- マーケット概況バー -->
+  <div class="ticker-bar" style="margin-bottom:20px" id="cryptoMarketBar">
+    <div class="ticker-item"><span class="ticker-pair">BTC.D</span><span class="ticker-val" id="c-btcdom">—</span><span class="ticker-chg" id="cc-btcdom" style="color:var(--text3)">%</span></div>
+    <div class="ticker-item"><span class="ticker-pair">総時価総額</span><span class="ticker-val" id="c-totalcap">—</span></div>
+    <div class="ticker-item"><span class="ticker-pair" style="color:#f7931a">BTC</span><span class="ticker-val" id="c-btc">—</span><span class="ticker-chg" id="cc-btc">—</span></div>
+    <div class="ticker-item"><span class="ticker-pair" style="color:#627eea">ETH</span><span class="ticker-val" id="c-eth">—</span><span class="ticker-chg" id="cc-eth">—</span></div>
+    <div class="ticker-item"><span class="ticker-pair" style="color:#9945ff">SOL</span><span class="ticker-val" id="c-sol">—</span><span class="ticker-chg" id="cc-sol">—</span></div>
+    <span id="cryptoUpdated" style="margin-left:auto;font-size:9px;color:var(--text3)"></span>
+  </div>
+
+  <div class="grid-65">
+    <div>
+      <div class="section-title">9銘柄 価格・変動率</div>
+      <div class="grid-crypto-9" id="coinCards">
+        <div class="crypto-card" style="text-align:center;padding:30px;color:var(--text3);font-size:12px">
+          <div class="ai-loading"><span></span><span></span><span></span>&nbsp;データ取得中...</div>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <!-- Fear & Greed -->
+      <div class="section-title">センチメント</div>
+      <div class="card" style="margin-bottom:16px">
+        <div class="card-title"><span class="dot"></span>Fear & Greed Index</div>
+        <div class="fg-value" id="fgValue" style="color:var(--yellow)">—</div>
+        <div class="fg-label" id="fgLabel">取得中...</div>
+        <div class="fg-meter"><div class="fg-needle" id="fgNeedle" style="left:50%"></div></div>
+        <div style="display:flex;justify-content:space-between;font-size:9px;color:var(--text3);margin-top:4px">
+          <span>EXTREME FEAR</span><span>FEAR</span><span>NEUTRAL</span><span>GREED</span><span>EXTREME GREED</span>
+        </div>
+        <div style="margin-top:12px;font-size:11px;color:var(--text2);line-height:1.8">
+          <div>0-24 → <span style="color:var(--green)">買い場候補</span>（極度の恐怖）</div>
+          <div>25-49 → <span style="color:var(--accent)">慎重に買い</span>（恐怖）</div>
+          <div>50-74 → <span style="color:var(--yellow)">様子見</span>（欲）</div>
+          <div>75-100 → <span style="color:var(--red)">利確検討</span>（極度の欲）</div>
+        </div>
+      </div>
+
+      <!-- ファンディングレート -->
+      <div class="card">
+        <div class="card-title"><span class="dot"></span>ファンディングレート（先物過熱感）</div>
+        <div id="fundingRates">
+          <div style="font-size:11px;color:var(--text3)">取得中...</div>
+        </div>
+        <div style="margin-top:10px;font-size:10px;color:var(--text3);line-height:1.7;padding-top:8px;border-top:1px solid var(--border)">
+          <span style="color:var(--red)">+0.05%超</span> → ロング過熱・調整注意　<span style="color:var(--green)">マイナス</span> → ショート優勢・反発期待
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── CRYPTO FUNDAMENTAL ── -->
+<div class="section" id="section-crypto-fundamental">
+  <div class="section-title">仮想通貨ファンダメンタル解説</div>
+  <div class="crypto-fund-tabs">
+    <button class="crypto-fund-tab active" onclick="setCryptoFundTab('btc')">₿ BTC</button>
+    <button class="crypto-fund-tab" onclick="setCryptoFundTab('eth')">Ξ ETH</button>
+    <button class="crypto-fund-tab" onclick="setCryptoFundTab('sol')">◎ SOL</button>
+    <button class="crypto-fund-tab" onclick="setCryptoFundTab('l2')">⚡ L2</button>
+    <button class="crypto-fund-tab" onclick="setCryptoFundTab('defi')">🔁 DeFi</button>
+    <button class="crypto-fund-tab" onclick="setCryptoFundTab('macro')">🌐 マクロ連動</button>
+  </div>
+
+  <!-- BTC -->
+  <div id="crypto-fund-btc" class="crypto-fund-content active">
+    <div class="grid-65">
+      <div>
+        <div class="fund-current">
+          <div><div class="fund-current-label">価格レンジ目安</div><div class="fund-current-val" style="color:var(--btc)" id="btc-price-fund">—</div></div>
+          <div><div class="fund-current-label">BTCドミナンス</div><div class="fund-current-val" style="color:var(--btc)" id="btc-dom-fund">—</div></div>
+          <div><div class="fund-current-label">半減期</div><div class="fund-current-val" style="color:var(--yellow)">2028年</div></div>
+        </div>
+        <div class="fund-section">
+          <div class="fund-section-title"><span class="fund-section-icon">📈</span>BTCの主な価格ドライバー</div>
+          <div class="fund-item">
+            <span class="fund-item-arrow" style="color:var(--green)">↑</span>
+            <div class="fund-item-body">
+              <div class="fund-item-condition">機関投資家のETF買い → BTC強</div>
+              <div class="fund-item-effect">2024年以降、BlackRockなどのスポットETFに毎日数百億円規模の資金流入。需給を根本から変えた。ETFフローが最重要指標の一つ。</div>
+            </div>
+          </div>
+          <div class="fund-item">
+            <span class="fund-item-arrow" style="color:var(--green)">↑</span>
+            <div class="fund-item-body">
+              <div class="fund-item-condition">半減期サイクル → 中長期強気</div>
+              <div class="fund-item-effect">約4年ごとに採掘報酬が半減。供給が絞られ過去3回の半減期後はすべて大幅高。次回は2028年。現在は2024年半減期後の上昇サイクル中。</div>
+            </div>
+          </div>
+          <div class="fund-item">
+            <span class="fund-item-arrow" style="color:var(--green)">↑</span>
+            <div class="fund-item-body">
+              <div class="fund-item-condition">FRB利下げ・ドル安 → BTC強</div>
+              <div class="fund-item-effect">金融緩和はリスク資産全体を押し上げる。BTCはデジタルゴールドとしてインフレヘッジ需要もあり、低金利環境で買われやすい。</div>
+            </div>
+          </div>
+          <div class="fund-item">
+            <span class="fund-item-arrow" style="color:var(--red)">↓</span>
+            <div class="fund-item-body">
+              <div class="fund-item-condition">規制強化・取引所破綻 → BTC弱</div>
+              <div class="fund-item-effect">FTX崩壊(2022)のような取引所リスク、各国規制強化は売り材料。ただし米国のBTC準備金政策など追い風もある。</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="card">
+          <div class="card-title"><span class="dot"></span>追うべき指標</div>
+          <div style="font-size:11px;color:var(--text2);line-height:2">
+            <div>📊 スポットETFの日次フロー（BlackRock IBIT等）</div>
+            <div>📊 取引所残高（減少→ホールド→強気）</div>
+            <div>📊 Mayer Multiple（過去200日平均との乖離）</div>
+            <div>📊 MVRV比率（含み益の過熱度）</div>
+            <div>📊 Fear & Greed Index</div>
+            <div>📊 米国CPI・FOMCの動向（マクロ連動）</div>
+          </div>
+        </div>
+        <div class="card gap-top">
+          <div class="card-title"><span class="dot"></span>現状サマリー</div>
+          <div style="font-size:12px;color:var(--text2);line-height:1.8">
+            <div style="margin-bottom:8px">🟢 ETF需給が底堅い、半減期後サイクル</div>
+            <div style="margin-bottom:8px">🔴 イラン戦争リスクオフ、マクロ不透明</div>
+            <div style="padding:10px;background:rgba(247,147,26,0.05);border-radius:6px;border:1px solid rgba(247,147,26,0.2)">
+              <b style="color:var(--btc)">中長期：強気　短期：マクロ次第</b>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ETH -->
+  <div id="crypto-fund-eth" class="crypto-fund-content">
+    <div class="grid-65">
+      <div>
+        <div class="fund-section">
+          <div class="fund-section-title"><span class="fund-section-icon">⛽</span>ETHの主な価格ドライバー</div>
+          <div class="fund-item">
+            <span class="fund-item-arrow" style="color:var(--green)">↑</span>
+            <div class="fund-item-body">
+              <div class="fund-item-condition">ガス代上昇・ネットワーク使用量増 → ETH強</div>
+              <div class="fund-item-effect">DeFi・NFT・L2の利用が活発になるとETHのガス代消費が増え、バーン(焼却)量が増加。供給が減り価格を押し上げる。</div>
+            </div>
+          </div>
+          <div class="fund-item">
+            <span class="fund-item-arrow" style="color:var(--green)">↑</span>
+            <div class="fund-item-body">
+              <div class="fund-item-condition">ステーキング利回りが高い → ETH買い需要</div>
+              <div class="fund-item-effect">ETHをステーキングすると年3〜4%の利回りが得られる。金利低下局面ではETHステーキングの相対的魅力が増し買い材料になる。</div>
+            </div>
+          </div>
+          <div class="fund-item">
+            <span class="fund-item-arrow" style="color:var(--red)">↓</span>
+            <div class="fund-item-body">
+              <div class="fund-item-condition">L2への移行でメインチェーンが閑散 → ETH弱</div>
+              <div class="fund-item-effect">ARB・OPなどL2が普及するとメインチェーンのガス代が下がりバーン量が減少。ETHの超デフレモデルが崩れる懸念がある。</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="card">
+          <div class="card-title"><span class="dot"></span>追うべき指標</div>
+          <div style="font-size:11px;color:var(--text2);line-height:2">
+            <div>📊 ETH/BTC比率（相対強度）</div>
+            <div>📊 ETHバーン量（ultrasound.money）</div>
+            <div>📊 ステーキング残高・利回り</div>
+            <div>📊 L2のTVL（DeFiLlama）</div>
+            <div>📊 スポットETH ETFフロー</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SOL -->
+  <div id="crypto-fund-sol" class="crypto-fund-content">
+    <div class="grid-65">
+      <div>
+        <div class="fund-section">
+          <div class="fund-section-title"><span class="fund-section-icon">⚡</span>SOLの主な価格ドライバー</div>
+          <div class="fund-item">
+            <span class="fund-item-arrow" style="color:var(--green)">↑</span>
+            <div class="fund-item-body">
+              <div class="fund-item-condition">DeFi・ミームコインブームでSOLチェーン活況 → SOL強</div>
+              <div class="fund-item-effect">取引速度が速く手数料が安いSOLはDeFiとミームコインの主戦場。チェーン上の活動量がそのままSOL需要に直結。</div>
+            </div>
+          </div>
+          <div class="fund-item">
+            <span class="fund-item-arrow" style="color:var(--red)">↓</span>
+            <div class="fund-item-body">
+              <div class="fund-item-condition">ネットワーク障害・集中化懸念 → SOL弱</div>
+              <div class="fund-item-effect">過去に複数回のネットワーク停止あり。バリデーターの集中化も懸念材料。技術的リスクがETHより高い。</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="card">
+          <div class="card-title"><span class="dot"></span>追うべき指標</div>
+          <div style="font-size:11px;color:var(--text2);line-height:2">
+            <div>📊 Solana DEX取引量</div>
+            <div>📊 SOLのTVL（DeFiLlama）</div>
+            <div>📊 ネットワーク稼働率・TPS</div>
+            <div>📊 SOL ETF申請動向</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- L2 -->
+  <div id="crypto-fund-l2" class="crypto-fund-content">
+    <div class="grid-2">
+      <div>
+        <div class="fund-section">
+          <div class="fund-section-title"><span class="fund-section-icon">🔴</span>ARB / OP（L2トークン）</div>
+          <div class="fund-item">
+            <span class="fund-item-arrow" style="color:var(--green)">↑</span>
+            <div class="fund-item-body">
+              <div class="fund-item-condition">L2のTVL・取引量増加 → ARB/OP強</div>
+              <div class="fund-item-effect">L2のネットワーク使用が増えるほどシーケンサー収益が増加。ARBはDAO収益をトークンホルダーに還元する仕組みあり。</div>
+            </div>
+          </div>
+          <div class="fund-item">
+            <span class="fund-item-arrow" style="color:var(--red)">↓</span>
+            <div class="fund-item-body">
+              <div class="fund-item-condition">トークンのアンロック（ベスティング解放）→ 売り圧力</div>
+              <div class="fund-item-effect">L2トークンは初期チームへのアンロックスケジュールが重要。大量解放前後は売り圧力が強まりやすい。</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="card">
+          <div class="card-title"><span class="dot"></span>追うべき指標</div>
+          <div style="font-size:11px;color:var(--text2);line-height:2">
+            <div>📊 ARB/OPのTVL推移（DeFiLlama）</div>
+            <div>📊 L2のDAU（日次アクティブユーザー）</div>
+            <div>📊 トークンアンロックスケジュール</div>
+            <div>📊 ETHとの相関（ETH上昇時に連れ高）</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DeFi -->
+  <div id="crypto-fund-defi" class="crypto-fund-content">
+    <div class="grid-2">
+      <div>
+        <div class="fund-section">
+          <div class="fund-section-title"><span class="fund-section-icon">🔗</span>LINK（チェーンリンク）</div>
+          <div class="fund-item">
+            <span class="fund-item-arrow" style="color:var(--green)">↑</span>
+            <div class="fund-item-body">
+              <div class="fund-item-condition">DeFi全体の成長 → LINK強</div>
+              <div class="fund-item-effect">スマートコントラクトが外部データを使うためにLINKのオラクルを必要とする。DeFiが成長するほどLINKの利用料が増加。インフラとして独自の価値がある。</div>
+            </div>
+          </div>
+        </div>
+        <div class="fund-section">
+          <div class="fund-section-title"><span class="fund-section-icon">🦄</span>UNI（ユニスワップ）</div>
+          <div class="fund-item">
+            <span class="fund-item-arrow" style="color:var(--green)">↑</span>
+            <div class="fund-item-body">
+              <div class="fund-item-condition">DEX取引量増加 → UNI強</div>
+              <div class="fund-item-effect">取引量が増えると手数料収益が増加。フィースイッチ（手数料の一部をUNIホルダーへ還元）が有効化されれば直接的な価値創出になる。</div>
+            </div>
+          </div>
+        </div>
+        <div class="fund-section">
+          <div class="fund-section-title"><span class="fund-section-icon">👻</span>AAVE（アーベ）</div>
+          <div class="fund-item">
+            <span class="fund-item-arrow" style="color:var(--green)">↑</span>
+            <div class="fund-item-body">
+              <div class="fund-item-condition">金利低下局面 → AAVEのTVL増加 → AAVE強</div>
+              <div class="fund-item-effect">暗号資産の貸し借りプロトコル。金利が下がると利用者が増えTVLが膨らむ。プロトコル収益がトークン保有者に還元される仕組みあり。</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="card">
+          <div class="card-title"><span class="dot"></span>DeFi共通の追うべき指標</div>
+          <div style="font-size:11px;color:var(--text2);line-height:2">
+            <div>📊 TVL（Total Value Locked）— DeFiLlama</div>
+            <div>📊 プロトコル収益（Token Terminal）</div>
+            <div>📊 P/F比率（時価総額÷年間収益）</div>
+            <div>📊 DEX vs CEX取引量比率</div>
+            <div>📊 ガバナンス提案（プロトコル改善の動き）</div>
+          </div>
+        </div>
+        <div class="card gap-top">
+          <div class="card-title"><span class="dot"></span>DeFiのFXとの違い</div>
+          <div style="font-size:11px;color:var(--text2);line-height:1.8">
+            FXは「金利差」が主な動因だが、DeFiは<b style="color:var(--accent)">プロトコル収益</b>が価値の根拠。収益が増えているプロトコルのトークンは株式に近い見方ができる。TVLと収益のトレンドを追うことで、ファンダ的な優劣判断が可能。
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MACRO -->
+  <div id="crypto-fund-macro" class="crypto-fund-content">
+    <div class="grid-2">
+      <div>
+        <div class="fund-section">
+          <div class="fund-section-title"><span class="fund-section-icon">🌐</span>マクロ環境と仮想通貨の連動</div>
+          <div class="fund-item">
+            <span class="fund-item-arrow" style="color:var(--green)">↑</span>
+            <div class="fund-item-body">
+              <div class="fund-item-condition">FRB利下げ・ドル安 → 仮想通貨全体強</div>
+              <div class="fund-item-effect">リスク資産全体が恩恵を受ける。過去の利下げサイクルと仮想通貨の強気相場は概ね一致。FXダッシュボードのUSDバイアスと連動して判断できる。</div>
+            </div>
+          </div>
+          <div class="fund-item">
+            <span class="fund-item-arrow" style="color:var(--red)">↓</span>
+            <div class="fund-item-body">
+              <div class="fund-item-condition">地政学リスク・株安 → 短期的にBTC売り</div>
+              <div class="fund-item-effect">イラン戦争のような突発リスクでは最初にリスク資産が売られる。ただし安全資産としての性質が強まれば回復が早いこともある。</div>
+            </div>
+          </div>
+          <div class="fund-item">
+            <span class="fund-item-arrow" style="color:var(--accent)">→</span>
+            <div class="fund-item-body">
+              <div class="fund-item-condition">BTCドミナンスで全体のセンチメントを把握</div>
+              <div class="fund-item-effect">BTC.D上昇 = リスクオフ(BTCに逃げる) → アルト売り。BTC.D低下 = リスクオン → アルトシーズンの兆し。FXのリスクオン/オフ判断と組み合わせると精度が上がる。</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="card">
+          <div class="card-title"><span class="dot"></span>FXとCryptoの併用判断フロー</div>
+          <div style="font-size:11px;color:var(--text2);line-height:2">
+            <div>① FXダッシュボードでリスクオン/オフを確認</div>
+            <div>② Fear&Greedと BTCドミナンスを確認</div>
+            <div>③ BTC ETFフローと半減期サイクルを確認</div>
+            <div>④ 狙う銘柄のTVL・収益トレンドを確認</div>
+            <div>⑤ ファンディングレートで過熱感を確認</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── CRYPTO NEWS ── -->
+<div class="section" id="section-crypto-news">
+  <div class="section-title">仮想通貨ニュース分析 — AI powered by Claude</div>
+  <div class="grid-65">
+    <div>
+      <div class="card" style="margin-bottom:16px">
+        <div class="card-title"><span class="dot"></span>ニュースを貼り付けてAI分析</div>
+        <textarea class="news-input-area" id="cryptoNewsInput" placeholder="分析したい仮想通貨ニュースを貼り付けてください。
+
+例：
+・「BlackRockのIBITに本日5億ドルの資金流入」
+・「FRBが利下げを示唆、BTCが反発」
+・「AAVEがフィースイッチ提案を可決」"></textarea>
+        <div style="display:flex;gap:10px;margin-top:10px">
+          <button class="btn-primary" id="cryptoAnalyzeBtn" onclick="analyzeCryptoNews()">⚡ AI分析を実行</button>
+          <button class="btn-secondary" onclick="document.getElementById('cryptoNewsInput').value=''">クリア</button>
+        </div>
+        <div id="cryptoAnalysisOutput"></div>
+      </div>
+    </div>
+    <div>
+      <div class="card">
+        <div class="card-title"><span class="dot"></span>仮想通貨分析のポイント</div>
+        <div style="font-size:11px;color:var(--text2);line-height:2">
+          <div>① ETFフローへの影響（機関需要）</div>
+          <div>② 規制・法律への影響</div>
+          <div>③ DeFiのTVL・収益への影響</div>
+          <div>④ BTCドミナンスへの影響</div>
+          <div>⑤ マクロ（FX）との連動</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</main>
+</div>
+
 <script>
 // ─── TIME ───
 function updateTime() {
@@ -2044,14 +2602,262 @@ async function fetchNewsApi() {
 
 // ─── INIT ───
 window.addEventListener('load', () => {
-  // 為替レート: 初回即取得 → 1時間ごと
   fetchRealRates();
   setInterval(fetchRealRates, 60 * 60 * 1000);
-
-  // ニュース: 初回取得のみ（サーバー側6時間キャッシュ済みのでフロントから頻繁に叩いても安全）
   fetchNewsApi();
-  setInterval(fetchNewsApi, 6 * 60 * 60 * 1000); // 6時間ごとに再取得
+  setInterval(fetchNewsApi, 6 * 60 * 60 * 1000);
 });
+
+// ─── MODE SWITCH ───
+let currentMode = 'fx';
+function switchMode(mode) {
+  currentMode = mode;
+  const fxMain = document.querySelector('main');
+  const cryptoMain = document.getElementById('crypto-main');
+  const fxNav = document.getElementById('fxNav');
+  const cryptoNav = document.getElementById('cryptoNav');
+  const logo = document.getElementById('headerLogo');
+  document.getElementById('modeFx').classList.toggle('active', mode === 'fx');
+  document.getElementById('modeCrypto').classList.toggle('active', mode === 'crypto');
+
+  if (mode === 'crypto') {
+    fxMain.style.display = 'none';
+    cryptoMain.style.display = 'block';
+    fxNav.style.display = 'none';
+    cryptoNav.style.display = 'flex';
+    logo.innerHTML = '₿<span>/</span>CRYPTO';
+    // 初回のみデータ取得
+    if (!window._cryptoLoaded) { fetchCryptoData(); window._cryptoLoaded = true; }
+    // クリプトナビの最初のボタンをアクティブに
+    document.querySelectorAll('#cryptoNav .nav-btn').forEach((b,i) => b.classList.toggle('active', i===0));
+    showCryptoSection('crypto-dashboard');
+  } else {
+    fxMain.style.display = 'block';
+    cryptoMain.style.display = 'none';
+    fxNav.style.display = 'flex';
+    cryptoNav.style.display = 'none';
+    logo.innerHTML = 'FX<span>/</span>FUND';
+  }
+}
+
+function showCryptoSection(id) {
+  document.querySelectorAll('#crypto-main .section').forEach(s => s.classList.remove('active'));
+  document.getElementById('section-' + id).classList.add('active');
+  document.querySelectorAll('#cryptoNav .nav-btn').forEach((b, i) => {
+    const ids = ['crypto-dashboard','crypto-fundamental','crypto-news'];
+    b.classList.toggle('active', ids[i] === id);
+  });
+}
+
+function setCryptoFundTab(id) {
+  document.querySelectorAll('.crypto-fund-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.crypto-fund-content').forEach(c => c.classList.remove('active'));
+  const tabs = document.querySelectorAll('.crypto-fund-tab');
+  const ids = ['btc','eth','sol','l2','defi','macro'];
+  tabs[ids.indexOf(id)].classList.add('active');
+  document.getElementById('crypto-fund-' + id).classList.add('active');
+}
+
+// ─── CRYPTO DATA FETCH ───
+const COIN_META = {
+  bitcoin:        { name:'Bitcoin',     sym:'BTC',  color:'#f7931a', icon:'₿',  cat:'BTC基軸' },
+  ethereum:       { name:'Ethereum',    sym:'ETH',  color:'#627eea', icon:'Ξ',  cat:'ETH基軸' },
+  solana:         { name:'Solana',      sym:'SOL',  color:'#9945ff', icon:'◎',  cat:'L1' },
+  arbitrum:       { name:'Arbitrum',    sym:'ARB',  color:'#ff6b6b', icon:'A',  cat:'L2' },
+  optimism:       { name:'Optimism',    sym:'OP',   color:'#ff0420', icon:'O',  cat:'L2' },
+  chainlink:      { name:'Chainlink',   sym:'LINK', color:'#375bd2', icon:'⬡',  cat:'DeFi' },
+  uniswap:        { name:'Uniswap',     sym:'UNI',  color:'#ff007a', icon:'🦄', cat:'DeFi' },
+  aave:           { name:'Aave',        sym:'AAVE', color:'#b6509e', icon:'👻', cat:'DeFi' },
+  'matic-network':{ name:'Polygon',     sym:'POL',  color:'#8247e5', icon:'⬡',  cat:'L2' },
+};
+
+function fmtPrice(p) {
+  if (p >= 1000) return '$' + p.toLocaleString('en-US', {maximumFractionDigits:0});
+  if (p >= 1)    return '$' + p.toFixed(2);
+  return '$' + p.toFixed(4);
+}
+function fmtCap(v) {
+  if (!v) return '—';
+  if (v >= 1e12) return '$' + (v/1e12).toFixed(2) + 'T';
+  if (v >= 1e9)  return '$' + (v/1e9).toFixed(1) + 'B';
+  return '$' + (v/1e6).toFixed(0) + 'M';
+}
+function chgClass(v) { return v > 0 ? 'up' : v < 0 ? 'dn' : 'neu'; }
+function chgStr(v)   { return (v > 0 ? '+' : '') + (v||0).toFixed(2) + '%'; }
+
+async function fetchCryptoData() {
+  try {
+    const r = await fetch('/api/crypto');
+    if (!r.ok) throw new Error('crypto api ' + r.status);
+    const data = await r.json();
+
+    // ── マーケットバー ──
+    if (data.dominance) {
+      document.getElementById('c-btcdom').textContent = data.dominance.btc + '%';
+      document.getElementById('c-totalcap').textContent = fmtCap(data.dominance.total);
+    }
+
+    // ── コインカード ──
+    const cards = document.getElementById('coinCards');
+    if (data.prices && data.prices.length) {
+      // マーケットバーのBTC/ETH/SOL
+      ['bitcoin','ethereum','solana'].forEach(id => {
+        const coin = data.prices.find(p => p.id === id);
+        if (!coin) return;
+        const s = COIN_META[id].sym.toLowerCase();
+        const el = document.getElementById('c-' + s);
+        const ce = document.getElementById('cc-' + s);
+        if (el) el.textContent = fmtPrice(coin.current_price);
+        if (ce) {
+          const c = coin.price_change_percentage_24h_in_currency || 0;
+          ce.textContent = chgStr(c);
+          ce.className = 'ticker-chg ' + chgClass(c);
+        }
+      });
+
+      // ファンダページ用BTC価格
+      const btc = data.prices.find(p => p.id === 'bitcoin');
+      if (btc) {
+        const bpf = document.getElementById('btc-price-fund');
+        if (bpf) bpf.textContent = fmtPrice(btc.current_price);
+      }
+      if (data.dominance) {
+        const bdf = document.getElementById('btc-dom-fund');
+        if (bdf) bdf.textContent = data.dominance.btc + '%';
+      }
+
+      // 9銘柄カード
+      const order = ['bitcoin','ethereum','solana','arbitrum','optimism','chainlink','uniswap','aave','matic-network'];
+      cards.innerHTML = order.map(id => {
+        const coin = data.prices.find(p => p.id === id);
+        const meta = COIN_META[id];
+        if (!coin || !meta) return '';
+        const c1h  = coin.price_change_percentage_1h_in_currency  || 0;
+        const c24h = coin.price_change_percentage_24h_in_currency || 0;
+        const c7d  = coin.price_change_percentage_7d_in_currency  || 0;
+        const fr   = data.funding && data.funding[id] != null
+          ? `<span style="font-size:9px;color:${data.funding[id]>0.05?'var(--red)':data.funding[id]<0?'var(--green)':'var(--text3)'}">FR:${data.funding[id].toFixed(4)}%</span>`
+          : '';
+        return `
+        <div class="crypto-card">
+          <div class="coin-header">
+            <div class="coin-icon" style="background:${meta.color}22;color:${meta.color}">${meta.icon}</div>
+            <div>
+              <div class="coin-name">${meta.name}</div>
+              <div class="coin-symbol">${meta.sym} · ${meta.cat}</div>
+            </div>
+          </div>
+          <div class="coin-price">${fmtPrice(coin.current_price)}</div>
+          <div class="coin-changes">
+            <span class="coin-chg ${chgClass(c1h)}">1h ${chgStr(c1h)}</span>
+            <span class="coin-chg ${chgClass(c24h)}">24h ${chgStr(c24h)}</span>
+            <span class="coin-chg ${chgClass(c7d)}">7d ${chgStr(c7d)}</span>
+          </div>
+          <div class="coin-meta">
+            <span>時価総額 ${fmtCap(coin.market_cap)}</span>
+            ${fr}
+          </div>
+        </div>`;
+      }).join('');
+    }
+
+    // ── Fear & Greed ──
+    if (data.fearGreed) {
+      const val = parseInt(data.fearGreed.value);
+      document.getElementById('fgValue').textContent = val;
+      document.getElementById('fgLabel').textContent = data.fearGreed.label;
+      document.getElementById('fgNeedle').style.left = val + '%';
+      const fgEl = document.getElementById('fgValue');
+      fgEl.style.color = val < 25 ? 'var(--green)' : val < 50 ? 'var(--accent)' : val < 75 ? 'var(--yellow)' : 'var(--red)';
+    }
+
+    // ── ファンディングレート ──
+    if (data.funding && Object.keys(data.funding).length) {
+      const frEl = document.getElementById('fundingRates');
+      const order2 = ['bitcoin','ethereum','solana','arbitrum','optimism','chainlink','uniswap','aave','matic-network'];
+      frEl.innerHTML = order2.map(id => {
+        const fr = data.funding[id];
+        if (fr == null) return '';
+        const meta = COIN_META[id];
+        const isHot  = fr > 0.05;
+        const isCold = fr < 0;
+        const barW   = Math.min(Math.abs(fr) * 1000, 100);
+        const barCol = isHot ? 'var(--red)' : isCold ? 'var(--green)' : 'var(--yellow)';
+        return `
+        <div class="funding-row">
+          <span class="funding-sym" style="color:${meta.color}">${meta.sym}</span>
+          <div class="funding-bar-outer">
+            <div class="funding-bar-inner" style="width:${barW}%;background:${barCol}"></div>
+          </div>
+          <span class="funding-val" style="color:${isHot?'var(--red)':isCold?'var(--green)':'var(--text2)'}">${fr.toFixed(4)}%</span>
+        </div>`;
+      }).join('');
+    }
+
+    // 更新時刻
+    const upEl = document.getElementById('cryptoUpdated');
+    if (upEl && data.fetchedAt) {
+      upEl.textContent = '更新: ' + new Date(data.fetchedAt).toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit'});
+    }
+
+    // 5分後に再取得
+    setTimeout(fetchCryptoData, 5 * 60 * 1000);
+
+  } catch(e) {
+    document.getElementById('coinCards').innerHTML =
+      `<div style="padding:20px;color:var(--red);font-size:12px">データ取得エラー: ${e.message}</div>`;
+  }
+}
+
+// ─── CRYPTO NEWS ANALYSIS ───
+async function analyzeCryptoNews() {
+  const text = document.getElementById('cryptoNewsInput').value.trim();
+  if (!text) { alert('ニュースを入力してください'); return; }
+  const btn = document.getElementById('cryptoAnalyzeBtn');
+  const out = document.getElementById('cryptoAnalysisOutput');
+  btn.disabled = true;
+  out.innerHTML = `<div class="ai-box"><div class="ai-box-title"><div class="ai-pulse"></div>AI分析中...</div><div class="ai-loading"><span></span><span></span><span></span></div></div>`;
+
+  const prompt = `あなたは仮想通貨ファンダメンタル分析の専門家です。以下のニュースを分析して日本語で教えてください。
+
+ニュース:
+${text}
+
+以下の形式で回答:
+
+【ニュースの要点】
+（2〜3文で要約）
+
+【影響を受ける銘柄】
+- BTC：強/弱/中立 — 理由
+- ETH：強/弱/中立 — 理由
+- SOL：強/弱/中立 — 理由
+- DeFi(LINK/UNI/AAVE)：強/弱/中立 — 理由
+- L2(ARB/OP)：強/弱/中立 — 理由
+
+【マクロ（FX）との関連】
+（リスクオン/オフへの影響）
+
+【総合判断】`;
+
+  try {
+    const r = await fetch('/api/claude', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ max_tokens: 1000, messages: [{role:'user', content: prompt}] })
+    });
+    const data = await r.json();
+    const txt = data.content?.[0]?.text || 'エラー';
+    out.innerHTML = `
+      <div class="analysis-result">
+        <div class="analysis-header"><div class="ai-pulse"></div><div class="analysis-title">AI分析完了</div></div>
+        <div class="analysis-body">${txt.replace(/\n/g,'<br>').replace(/【(.+?)】/g,'<b style="color:var(--accent)">【$1】</b>')}</div>
+      </div>`;
+  } catch(e) {
+    out.innerHTML = `<div class="ai-box"><div class="ai-text" style="color:var(--red)">エラー: ${e.message}</div></div>`;
+  }
+  btn.disabled = false;
+}
 </script>
 </body>
 </html>
