@@ -675,9 +675,23 @@
     background: var(--border);
   }
 
-  .gap-top { margin-top: 20px; }
+  /* ── AI PROVIDER BUTTONS ── */
+  .ai-provider-btn {
+    display: flex; align-items: center; gap: 6px;
+    padding: 8px 16px; border-radius: 8px;
+    border: 1px solid var(--border2);
+    background: var(--surface); color: var(--text3);
+    font-size: 12px; font-weight: 700;
+    font-family: 'Noto Sans JP', sans-serif;
+    cursor: pointer; transition: all .2s;
+  }
+  .ai-provider-btn:hover { color: var(--text2); border-color: var(--text3); }
+  .ai-provider-btn.active {
+    background: rgba(0,212,255,0.1);
+    color: var(--accent); border-color: var(--accent);
+  }
 
-  /* ── MODE SWITCH ── */
+  .gap-top { margin-top: 20px; }
   .mode-switch {
     display: flex; gap: 4px;
     background: var(--bg2);
@@ -846,7 +860,7 @@
     <button class="nav-btn" onclick="showSection('calendar')">経済指標</button>
     <button class="nav-btn" onclick="showSection('fundamental')">ファンダ解説</button>
     <button class="nav-btn" onclick="showSection('news')">ニュース分析</button>
-    <button class="nav-btn" onclick="showSection('rss')">RSS設定</button>
+    <button class="nav-btn" onclick="showSection('rss')">RSS / AI設定</button>
   </nav>
   <nav id="cryptoNav" style="display:none">
     <button class="nav-btn active" onclick="showCryptoSection('crypto-dashboard')">ダッシュボード</button>
@@ -1564,7 +1578,7 @@
 
 <!-- ═══════════════════════ NEWS ANALYSIS ═══════════════════════ -->
 <div class="section" id="section-news">
-  <div class="section-title">ニュース分析 — AI powered by Claude</div>
+  <div class="section-title">ニュース分析 — <span id="aiModelBadge" style="color:var(--accent)">AI</span></div>
   <div class="grid-65">
     <div>
       <div class="card" style="margin-bottom:16px">
@@ -1582,7 +1596,7 @@
             ⚡ AI分析を実行
           </button>
           <button class="btn-secondary" onclick="document.getElementById('newsInput').value=''">クリア</button>
-          <div style="margin-left:auto;font-size:10px;color:var(--text3)">Claude Sonnet APIを使用</div>
+          <div id="aiStatusBadge" style="margin-left:auto;font-size:10px;color:var(--text3)">RSS / AI設定でモデルを選択</div>
         </div>
         <div id="analysisOutput"></div>
       </div>
@@ -1670,54 +1684,80 @@
   </div>
 </div>
 
-<!-- ═══════════════════════ RSS SETTINGS ═══════════════════════ -->
+<!-- ═══════════════════════ RSS / AI SETTINGS ═══════════════════════ -->
 <div class="section" id="section-rss">
-  <div class="section-title">RSSフィード設定</div>
+  <div class="section-title">RSS / AI設定</div>
   <div class="grid-2">
+    <!-- 左: AI設定 -->
+    <div>
+      <div class="card" style="border-top:3px solid var(--accent)">
+        <div class="card-title"><span class="dot"></span>AIモデル設定（個人設定・このブラウザのみ）</div>
+        <div style="font-size:11px;color:var(--text3);margin-bottom:14px;padding:8px;background:rgba(0,212,255,0.05);border-radius:6px;border:1px solid rgba(0,212,255,0.15)">
+          🔒 APIキーはこのブラウザのlocalStorageにのみ保存されます。サーバーや他のユーザーには一切共有されません。
+        </div>
+
+        <!-- プロバイダー選択 -->
+        <div style="margin-bottom:14px">
+          <div style="font-size:10px;font-weight:700;letter-spacing:1px;color:var(--text3);text-transform:uppercase;margin-bottom:8px">プロバイダー</div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap" id="providerBtns">
+            <button class="ai-provider-btn active" data-provider="anthropic" onclick="selectProvider('anthropic',this)">
+              <span style="font-size:14px">🤖</span> Anthropic
+            </button>
+            <button class="ai-provider-btn" data-provider="openai" onclick="selectProvider('openai',this)">
+              <span style="font-size:14px">⚡</span> OpenAI
+            </button>
+            <button class="ai-provider-btn" data-provider="google" onclick="selectProvider('google',this)">
+              <span style="font-size:14px">✦</span> Google
+            </button>
+          </div>
+        </div>
+
+        <!-- モデル選択 -->
+        <div style="margin-bottom:14px">
+          <div style="font-size:10px;font-weight:700;letter-spacing:1px;color:var(--text3);text-transform:uppercase;margin-bottom:8px">モデル</div>
+          <select id="modelSelect" style="width:100%;background:var(--bg2);border:1px solid var(--border2);border-radius:8px;padding:8px 12px;color:var(--text);font-size:12px;font-family:'Noto Sans JP',sans-serif">
+          </select>
+        </div>
+
+        <!-- APIキー入力 -->
+        <div style="margin-bottom:14px">
+          <div style="font-size:10px;font-weight:700;letter-spacing:1px;color:var(--text3);text-transform:uppercase;margin-bottom:8px">
+            APIキー <span id="keyHint" style="font-weight:400;color:var(--text3)">（sk-ant-...）</span>
+          </div>
+          <div style="display:flex;gap:8px">
+            <input type="password" id="userApiKey" placeholder="APIキーを入力..."
+              style="flex:1;background:var(--bg2);border:1px solid var(--border2);border-radius:8px;padding:8px 12px;color:var(--text);font-size:12px;font-family:'Space Mono',monospace">
+            <button onclick="toggleKeyVisibility()" style="background:var(--surface2);border:1px solid var(--border2);border-radius:8px;padding:8px 12px;color:var(--text2);cursor:pointer;font-size:12px" id="eyeBtn">👁</button>
+          </div>
+          <div id="keyGetLink" style="margin-top:6px;font-size:10px;color:var(--text3)"></div>
+        </div>
+
+        <div style="display:flex;gap:8px">
+          <button class="btn-primary" onclick="saveAiSettings()" style="flex:1">💾 保存して適用</button>
+          <button class="btn-secondary" onclick="clearAiSettings()">クリア</button>
+        </div>
+
+        <!-- 現在の設定表示 -->
+        <div id="currentAiConfig" style="margin-top:14px;padding:10px;background:var(--bg2);border-radius:8px;border:1px solid var(--border);font-size:11px;color:var(--text2)">
+          現在の設定を読み込み中...
+        </div>
+      </div>
+    </div>
+
+    <!-- 右: RSS設定 -->
     <div>
       <div class="card">
         <div class="card-title"><span class="dot"></span>接続中のフィード</div>
         <div id="rssSources">
-          <div class="rss-source">
-            <div class="rss-dot rss-active"></div>
-            <div class="rss-name">Reuters — 為替・金融ニュース</div>
-            <span class="rss-count">12件</span>
-            <span class="rss-time">2分前</span>
-          </div>
-          <div class="rss-source">
-            <div class="rss-dot rss-active"></div>
-            <div class="rss-name">Bloomberg Markets RSS</div>
-            <span class="rss-count">8件</span>
-            <span class="rss-time">5分前</span>
-          </div>
-          <div class="rss-source">
-            <div class="rss-dot rss-active"></div>
-            <div class="rss-name">日経新聞 — 為替・金融</div>
-            <span class="rss-count">6件</span>
-            <span class="rss-time">8分前</span>
-          </div>
-          <div class="rss-source">
-            <div class="rss-dot rss-pending"></div>
-            <div class="rss-name">FX Street — Economic Calendar</div>
-            <span class="rss-count">接続中...</span>
-            <span class="rss-time">—</span>
-          </div>
-          <div class="rss-source">
-            <div class="rss-dot rss-active"></div>
-            <div class="rss-name">Investing.com — News RSS</div>
-            <span class="rss-count">15件</span>
-            <span class="rss-time">1分前</span>
-          </div>
-        </div>
-        <div style="margin-top:14px;display:flex;gap:8px">
-          <input type="text" placeholder="RSSフィードURLを追加..." style="flex:1;background:var(--bg2);border:1px solid var(--border2);border-radius:8px;padding:8px 12px;color:var(--text);font-size:12px;font-family:'Noto Sans JP',sans-serif">
-          <button class="btn-primary" style="white-space:nowrap">追加</button>
+          <div class="rss-source"><div class="rss-dot rss-active"></div><div class="rss-name">Reuters — 為替・金融ニュース</div><span class="rss-count">12件</span><span class="rss-time">2分前</span></div>
+          <div class="rss-source"><div class="rss-dot rss-active"></div><div class="rss-name">Bloomberg Markets RSS</div><span class="rss-count">8件</span><span class="rss-time">5分前</span></div>
+          <div class="rss-source"><div class="rss-dot rss-active"></div><div class="rss-name">日経新聞 — 為替・金融</div><span class="rss-count">6件</span><span class="rss-time">8分前</span></div>
+          <div class="rss-source"><div class="rss-dot rss-pending"></div><div class="rss-name">FX Street — Economic Calendar</div><span class="rss-count">接続中...</span><span class="rss-time">—</span></div>
+          <div class="rss-source"><div class="rss-dot rss-active"></div><div class="rss-name">Investing.com — News RSS</div><span class="rss-count">15件</span><span class="rss-time">1分前</span></div>
         </div>
       </div>
-    </div>
-    <div>
-      <div class="card">
-        <div class="card-title"><span class="dot"></span>更新・通知設定</div>
+      <div class="card gap-top">
+        <div class="card-title"><span class="dot"></span>更新設定</div>
         <div style="font-size:12px;color:var(--text2);line-height:2">
           <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border)">
             <span>自動更新間隔</span>
@@ -1725,20 +1765,11 @@
               <option>5分</option><option selected>10分</option><option>30分</option>
             </select>
           </div>
-          <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border)">
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0">
             <span>高インパクト指標通知</span>
             <div style="width:36px;height:20px;background:var(--accent);border-radius:10px;position:relative;cursor:pointer"><div style="width:16px;height:16px;background:white;border-radius:50%;position:absolute;right:2px;top:2px"></div></div>
           </div>
-          <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border)">
-            <span>AIによる自動分析</span>
-            <div style="width:36px;height:20px;background:var(--accent);border-radius:10px;position:relative;cursor:pointer"><div style="width:16px;height:16px;background:white;border-radius:50%;position:absolute;right:2px;top:2px"></div></div>
-          </div>
-          <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0">
-            <span>API キー</span>
-            <span style="font-size:11px;color:var(--green)">✓ サーバー側で設定済み</span>
-          </div>
         </div>
-        <button class="btn-primary" style="margin-top:12px" onclick="saveSettings()">設定を保存</button>
       </div>
       <div class="card gap-top">
         <div class="card-title"><span class="dot"></span>おすすめRSSソース</div>
@@ -2166,11 +2197,13 @@ setInterval(updateTime, 1000); updateTime();
 // ─── NAV ───
 function showSection(id) {
   document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('#fxNav .nav-btn').forEach(b => b.classList.remove('active'));
   document.getElementById('section-' + id).classList.add('active');
-  const btns = document.querySelectorAll('.nav-btn');
+  const btns = document.querySelectorAll('#fxNav .nav-btn');
   const labels = ['dashboard','calendar','fundamental','news','rss'];
-  btns[labels.indexOf(id)].classList.add('active');
+  btns[labels.indexOf(id)]?.classList.add('active');
+  // AI設定タブを開いた時にUIを初期化
+  if (id === 'rss') initAiSettingsUI();
 }
 
 // ─── FUND TABS ───
@@ -2344,13 +2377,326 @@ async function generateDailySummary() {
   }
 }
 
-function saveSettings() {
-  const key = document.getElementById('apiKeyInput').value;
-  if (key) localStorage.setItem('fx_api_key', key);
-  alert('設定を保存しました');
+// ─── AI CONFIG ───────────────────────────────────────────────
+const AI_PROVIDERS = {
+  anthropic: {
+    name: 'Anthropic',
+    keyPrefix: 'sk-ant-',
+    keyHint: '（sk-ant-...）',
+    keyLink: '<a href="https://console.anthropic.com" target="_blank" style="color:var(--accent)">console.anthropic.com でキーを取得</a>',
+    models: [
+      { id: 'claude-sonnet-4-20250514', label: 'Claude Sonnet 4 (推奨)' },
+      { id: 'claude-opus-4-20250514',   label: 'Claude Opus 4 (高精度)' },
+      { id: 'claude-haiku-4-5-20251001',label: 'Claude Haiku 4.5 (高速)' },
+    ],
+  },
+  openai: {
+    name: 'OpenAI',
+    keyPrefix: 'sk-',
+    keyHint: '（sk-...）',
+    keyLink: '<a href="https://platform.openai.com/api-keys" target="_blank" style="color:var(--accent)">platform.openai.com でキーを取得</a>',
+    models: [
+      { id: 'gpt-4o',      label: 'GPT-4o (推奨)' },
+      { id: 'gpt-4o-mini', label: 'GPT-4o mini (高速・安価)' },
+      { id: 'o3-mini',     label: 'o3-mini (推論特化)' },
+    ],
+  },
+  google: {
+    name: 'Google',
+    keyPrefix: 'AIza',
+    keyHint: '（AIza...）',
+    keyLink: '<a href="https://aistudio.google.com/app/apikey" target="_blank" style="color:var(--accent)">aistudio.google.com でキーを取得（無料枠大）</a>',
+    models: [
+      { id: 'gemini-2.0-flash',        label: 'Gemini 2.0 Flash (推奨・高速)' },
+      { id: 'gemini-2.0-flash-thinking',label: 'Gemini 2.0 Flash Thinking (推論)' },
+      { id: 'gemini-1.5-pro',          label: 'Gemini 1.5 Pro (高精度)' },
+    ],
+  },
+};
+
+// localStorage キー
+const LS_PROVIDER = 'ai_provider';
+const LS_MODEL    = 'ai_model';
+const LS_KEY      = 'ai_api_key';
+
+function getAiConfig() {
+  return {
+    provider: localStorage.getItem(LS_PROVIDER) || 'anthropic',
+    model:    localStorage.getItem(LS_MODEL)    || 'claude-sonnet-4-20250514',
+    key:      localStorage.getItem(LS_KEY)      || '',
+  };
 }
 
-// ─── RSS FETCH ───
+function updateAiBadges() {
+  const cfg = getAiConfig();
+  const prov = AI_PROVIDERS[cfg.provider];
+  const modelLabel = (prov?.models.find(m => m.id === cfg.model)?.label) || cfg.model;
+  const hasKey = !!cfg.key;
+
+  // ニュース分析タブのバッジ
+  const badge = document.getElementById('aiModelBadge');
+  const status = document.getElementById('aiStatusBadge');
+  if (badge) badge.textContent = prov?.name + ' / ' + modelLabel;
+  if (status) {
+    if (hasKey) {
+      status.textContent = '✓ ' + prov?.name + ' キー設定済み';
+      status.style.color = 'var(--green)';
+    } else {
+      status.textContent = '⚠ RSS / AI設定でキーを入力してください';
+      status.style.color = 'var(--yellow)';
+    }
+  }
+
+  // 設定タブの現在設定表示
+  const cur = document.getElementById('currentAiConfig');
+  if (cur) {
+    cur.innerHTML = hasKey
+      ? `✓ <b style="color:var(--green)">${prov?.name}</b> / ${modelLabel} — キー設定済み`
+      : `⚠ <b style="color:var(--yellow)">${prov?.name}</b> / ${modelLabel} — <span style="color:var(--yellow)">キー未設定</span>`;
+  }
+}
+
+function selectProvider(provider, btn) {
+  document.querySelectorAll('.ai-provider-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  const prov = AI_PROVIDERS[provider];
+  if (!prov) return;
+
+  // モデル選択肢を更新
+  const sel = document.getElementById('modelSelect');
+  sel.innerHTML = prov.models.map(m =>
+    `<option value="${m.id}">${m.label}</option>`
+  ).join('');
+
+  // 既存保存値があれば選択
+  const saved = localStorage.getItem(LS_MODEL);
+  if (saved && prov.models.find(m => m.id === saved)) sel.value = saved;
+
+  // キーヒント・取得リンクを更新
+  document.getElementById('keyHint').textContent = prov.keyHint;
+  document.getElementById('keyGetLink').innerHTML = prov.keyLink;
+
+  // 既存キーを表示（同プロバイダーのキーが保存済みなら）
+  const savedKey = localStorage.getItem(LS_KEY) || '';
+  const savedProv = localStorage.getItem(LS_PROVIDER) || 'anthropic';
+  document.getElementById('userApiKey').value = (savedProv === provider) ? savedKey : '';
+}
+
+function saveAiSettings() {
+  const provider = document.querySelector('.ai-provider-btn.active')?.dataset.provider || 'anthropic';
+  const model    = document.getElementById('modelSelect').value;
+  const key      = document.getElementById('userApiKey').value.trim();
+
+  if (!key) { alert('APIキーを入力してください'); return; }
+
+  localStorage.setItem(LS_PROVIDER, provider);
+  localStorage.setItem(LS_MODEL,    model);
+  localStorage.setItem(LS_KEY,      key);
+
+  updateAiBadges();
+  alert('✓ 保存しました。このブラウザでのみ有効です。');
+}
+
+function clearAiSettings() {
+  if (!confirm('AI設定（キー含む）をクリアしますか？')) return;
+  localStorage.removeItem(LS_PROVIDER);
+  localStorage.removeItem(LS_MODEL);
+  localStorage.removeItem(LS_KEY);
+  document.getElementById('userApiKey').value = '';
+  updateAiBadges();
+  alert('クリアしました。');
+}
+
+function toggleKeyVisibility() {
+  const inp = document.getElementById('userApiKey');
+  const btn = document.getElementById('eyeBtn');
+  if (inp.type === 'password') { inp.type = 'text'; btn.textContent = '🙈'; }
+  else { inp.type = 'password'; btn.textContent = '👁'; }
+}
+
+// 設定タブを開いた時に現在の設定を反映
+function initAiSettingsUI() {
+  const cfg = getAiConfig();
+  // プロバイダーボタン
+  document.querySelectorAll('.ai-provider-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.provider === cfg.provider);
+  });
+  // モデル選択肢
+  const prov = AI_PROVIDERS[cfg.provider];
+  const sel = document.getElementById('modelSelect');
+  if (sel && prov) {
+    sel.innerHTML = prov.models.map(m =>
+      `<option value="${m.id}">${m.label}</option>`
+    ).join('');
+    sel.value = cfg.model;
+  }
+  // キーヒント
+  if (prov) {
+    document.getElementById('keyHint').textContent = prov.keyHint;
+    document.getElementById('keyGetLink').innerHTML = prov.keyLink;
+  }
+  // キー（マスク表示）
+  if (cfg.key) {
+    document.getElementById('userApiKey').value = cfg.key;
+  }
+  updateAiBadges();
+}
+
+// ─── UNIVERSAL AI CALL ───────────────────────────────────────
+async function callAI(prompt) {
+  const cfg = getAiConfig();
+  if (!cfg.key) throw new Error('APIキーが設定されていません。RSS / AI設定タブで入力してください。');
+
+  if (cfg.provider === 'anthropic') {
+    const r = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': cfg.key,
+        'anthropic-version': '2023-06-01',
+      },
+      body: JSON.stringify({
+        model: cfg.model,
+        max_tokens: 1200,
+        messages: [{ role: 'user', content: prompt }],
+      }),
+    });
+    const data = await r.json();
+    if (data.error) throw new Error(data.error.message);
+    return data.content?.[0]?.text || '';
+  }
+
+  if (cfg.provider === 'openai') {
+    const r = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + cfg.key,
+      },
+      body: JSON.stringify({
+        model: cfg.model,
+        max_tokens: 1200,
+        messages: [{ role: 'user', content: prompt }],
+      }),
+    });
+    const data = await r.json();
+    if (data.error) throw new Error(data.error.message);
+    return data.choices?.[0]?.message?.content || '';
+  }
+
+  if (cfg.provider === 'google') {
+    const r = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/${cfg.model}:generateContent?key=${cfg.key}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: prompt }] }],
+          generationConfig: { maxOutputTokens: 1200 },
+        }),
+      }
+    );
+    const data = await r.json();
+    if (data.error) throw new Error(data.error.message);
+    return data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+  }
+
+  throw new Error('未対応のプロバイダーです');
+}
+
+// ─── AI ANALYSIS (FX) ────────────────────────────────────────
+async function analyzeNews() {
+  const text = document.getElementById('newsInput').value.trim();
+  if (!text) { alert('ニュースを入力してください'); return; }
+  const btn = document.getElementById('analyzeBtn');
+  const out = document.getElementById('analysisOutput');
+  btn.disabled = true;
+  out.innerHTML = `<div class="ai-box"><div class="ai-box-title"><div class="ai-pulse"></div>AI分析中...</div><div class="ai-loading"><span></span><span></span><span></span></div></div>`;
+
+  const prompt = `あなたはFXファンダメンタル分析の専門家です。以下のニュースを分析して、各通貨への影響を日本語で教えてください。
+
+ニュース:
+${text}
+
+以下の形式で回答してください：
+
+【ニュースの要点】
+（2〜3文で要約）
+
+【各通貨への影響】
+- USD(米ドル)：強/弱/中立 — 理由
+- EUR(ユーロ)：強/弱/中立 — 理由
+- GBP(英ポンド)：強/弱/中立 — 理由
+- JPY(円)：強/弱/中立 — 理由
+- 資源国通貨：強/弱/中立 — 理由
+
+【注目すべき通貨ペア】
+（最も動きやすいペアと方向性）
+
+【総合判断】
+（リスクオン/オフ、大局的なバイアス）`;
+
+  try {
+    const txt = await callAI(prompt);
+    const cfg = getAiConfig();
+    const prov = AI_PROVIDERS[cfg.provider];
+    out.innerHTML = `
+      <div class="analysis-result">
+        <div class="analysis-header">
+          <div class="ai-pulse"></div>
+          <div class="analysis-title">AI分析完了 — ${prov?.name} / ${cfg.model} — ${new Date().toLocaleTimeString('ja-JP')}</div>
+        </div>
+        <div class="analysis-body">${txt.replace(/\n/g,'<br>').replace(/【(.+?)】/g,'<b style="color:var(--accent)">【$1】</b>')}</div>
+      </div>`;
+  } catch(e) {
+    out.innerHTML = `<div class="ai-box"><div class="ai-text" style="color:var(--red)">エラー: ${e.message}</div></div>`;
+  }
+  btn.disabled = false;
+}
+
+async function generateDailySummary() {
+  const out = document.getElementById('dailySummaryOutput');
+  out.innerHTML = `<div class="ai-box"><div class="ai-box-title"><div class="ai-pulse"></div>総合分析を生成中...</div><div class="ai-loading"><span></span><span></span><span></span></div></div>`;
+
+  const today = new Date().toLocaleDateString('ja-JP', {year:'numeric',month:'long',day:'numeric'});
+  const prompt = `${today}のFXマーケットのファンダメンタル状況を分析してください。
+
+現在の主な状況（2026年3月時点）：
+- USD: 政策金利3.50-3.75%、CPI2.4%、雇用2月-92K、イラン戦争で不透明
+- EUR: 政策金利2.00%、イラン戦争でエネルギー危機再燃、利上げ観測も
+- GBP: 政策金利3.75%、インフレ3.6%で粘着、BOEタカ派転換の可能性
+- JPY: 政策金利0.75%、リスクオフ安全通貨、日銀利上げ継続期待
+- 資源国: 原油急騰(WTI~$90)でCAD・NOK恩恵
+- 地政学: イラン戦争（2/28勃発）、ホルムズ海峡封鎖、原油高騰
+
+各通貨の今日のバイアスと注目ポイントを各150文字程度でまとめてください。最後に本日の総括も。`;
+
+  try {
+    const txt = await callAI(prompt);
+    const cfg = getAiConfig();
+    out.innerHTML = `
+      <div class="analysis-result">
+        <div class="analysis-header"><div class="ai-pulse"></div>
+          <div class="analysis-title">本日の総合ファンダメンタル分析 — ${AI_PROVIDERS[cfg.provider]?.name}</div>
+        </div>
+        <div class="analysis-body">${txt.replace(/\n/g,'<br>').replace(/【(.+?)】/g,'<b style="color:var(--accent)">【$1】</b>').replace(/USD|EUR|GBP|JPY|AUD|CAD/g,m=>`<b style="color:var(--accent)">${m}</b>`)}</div>
+      </div>`;
+  } catch(e) {
+    out.innerHTML = `<div class="ai-box"><div class="ai-text" style="color:var(--red)">エラー: ${e.message}<br>RSS / AI設定でAPIキーを設定してください。</div></div>`;
+  }
+}
+
+function saveSettings() { /* 旧関数、互換のため残す */ }
+
+// ─── INIT ───
+window.addEventListener('load', () => {
+  fetchRealRates();
+  setInterval(fetchRealRates, 60 * 60 * 1000);
+  fetchNewsApi();
+  setInterval(fetchNewsApi, 6 * 60 * 60 * 1000);
+  // AI設定の初期化（設定タブを開いた時用）
+  updateAiBadges();
+});
 const RSS_SOURCES = [
   { name: 'Reuters', url: 'https://feeds.reuters.com/reuters/businessNews', tags: ['USD','GLOBAL'] },
   { name: 'Investing.com', url: 'https://www.investing.com/rss/news.rss', tags: ['GLOBAL'] },
@@ -2841,20 +3187,17 @@ ${text}
 【総合判断】`;
 
   try {
-    const r = await fetch('/api/claude', {
-      method: 'POST',
-      headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({ max_tokens: 1000, messages: [{role:'user', content: prompt}] })
-    });
-    const data = await r.json();
-    const txt = data.content?.[0]?.text || 'エラー';
+    const txt = await callAI(prompt);
+    const cfg = getAiConfig();
     out.innerHTML = `
       <div class="analysis-result">
-        <div class="analysis-header"><div class="ai-pulse"></div><div class="analysis-title">AI分析完了</div></div>
+        <div class="analysis-header"><div class="ai-pulse"></div>
+          <div class="analysis-title">AI分析完了 — ${AI_PROVIDERS[cfg.provider]?.name}</div>
+        </div>
         <div class="analysis-body">${txt.replace(/\n/g,'<br>').replace(/【(.+?)】/g,'<b style="color:var(--accent)">【$1】</b>')}</div>
       </div>`;
   } catch(e) {
-    out.innerHTML = `<div class="ai-box"><div class="ai-text" style="color:var(--red)">エラー: ${e.message}</div></div>`;
+    out.innerHTML = `<div class="ai-box"><div class="ai-text" style="color:var(--red)">エラー: ${e.message}<br>RSS / AI設定でAPIキーを設定してください。</div></div>`;
   }
   btn.disabled = false;
 }
