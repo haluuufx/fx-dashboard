@@ -3028,12 +3028,13 @@ const COIN_META = {
 };
 
 function fmtPrice(p) {
+  if (p == null || isNaN(p)) return '—';
   if (p >= 1000) return '$' + p.toLocaleString('en-US', {maximumFractionDigits:0});
   if (p >= 1)    return '$' + p.toFixed(2);
   return '$' + p.toFixed(4);
 }
 function fmtCap(v) {
-  if (!v) return '—';
+  if (v == null || isNaN(v)) return '—';
   if (v >= 1e12) return '$' + (v/1e12).toFixed(2) + 'T';
   if (v >= 1e9)  return '$' + (v/1e9).toFixed(1) + 'B';
   return '$' + (v/1e6).toFixed(0) + 'M';
@@ -3095,8 +3096,8 @@ async function fetchCryptoData() {
         const c1h  = coin.price_change_percentage_1h_in_currency  || 0;
         const c24h = coin.price_change_percentage_24h_in_currency || 0;
         const c7d  = coin.price_change_percentage_7d_in_currency  || 0;
-        const fr   = data.funding && data.funding[id] != null
-          ? `<span style="font-size:9px;color:${data.funding[id]>0.05?'var(--red)':data.funding[id]<0?'var(--green)':'var(--text3)'}">FR:${data.funding[id].toFixed(4)}%</span>`
+        const fr   = (data.funding && data.funding[id] != null)
+          ? `<span style="font-size:9px;color:${data.funding[id]>0.05?'var(--red)':data.funding[id]<0?'var(--green)':'var(--text3)'}">FR:${Number(data.funding[id]).toFixed(4)}%</span>`
           : '';
         return `
         <div class="crypto-card">
@@ -3149,7 +3150,7 @@ async function fetchCryptoData() {
           <div class="funding-bar-outer">
             <div class="funding-bar-inner" style="width:${barW}%;background:${barCol}"></div>
           </div>
-          <span class="funding-val" style="color:${isHot?'var(--red)':isCold?'var(--green)':'var(--text2)'}">${fr.toFixed(4)}%</span>
+          <span class="funding-val" style="color:${isHot?'var(--red)':isCold?'var(--green)':'var(--text2)'}">${Number(fr).toFixed(4)}%</span>
         </div>`;
       }).join('');
     }
